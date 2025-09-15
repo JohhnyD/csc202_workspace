@@ -45,9 +45,7 @@
 // Define function prototypes used by the program
 //-----------------------------------------------------------
 uint16_t set_bit(uint16_t reg_value, uint16_t bit_mask);
-{
-  return (reg_value | bit_mask);
-}
+
 
 void msp_printf(char* buffer, unsigned int value);
 uint16_t clear_bit(uint16_t reg_value, uint16_t bit_mask);
@@ -56,10 +54,23 @@ bool check_bit(uint16_t reg_value, uint16_t bit_mask);
 //-----------------------------------------------------------------------------
 // Define symbolic constants used by program
 //-----------------------------------------------------------------------------
-#define PieBit 0x0001
-#define RDbit 0x0010
-#define CRSbit 0x0070
-#define 
+// Uses the shift left operator to create the mask automatically based on 
+// bit position 
+#define A3_BIT_MASK                  (1 << 15)
+#define A2_BIT_MASK                  (1 << 14)
+#define A1_BIT_MASK                  (1 << 13)
+#define A0_BIT_MASK                  (1 << 12)
+#define PRS_BIT_MASK                 (7 << 9)
+#define MODE_BIT_MASK                (3 << 7)
+#define MODE_10_BIT_VALUE            (2 << 7)
+#define MODE_01_BIT_VALUE            (1 << 7)
+#define CRS_BIT_MASK                 (7 << 4)
+#define MD_BIT_MASK                  (1 << 3)
+#define RD_BIT_MASK                  (1 << 2)
+#define EME_BIT_MASK                 (1 << 1)
+#define PIE_BIT_MASK                 (1 << 0)
+
+
 //-----------------------------------------------------------------------------
 // Define global variable and structures here.
 // NOTE: when possible avoid using global variables
@@ -97,7 +108,10 @@ int main(void)
   msp_printf("PROBLEM 1: Setting PIE bit\r\n", 0);
 
   // Enter code below
-  set_bit(test_reg16, PieBit );
+  // reg_value = test_reg16; // READ
+  // reg_value = reg_value | PIE_BIT_MASK; // MODIFY
+  // test_reg16 = reg_value;     // WRITE
+  test_reg16 = set_bit(test_reg16, PIE_BIT_MASK);
 
   msp_printf("    --> Test reg = 0x%04X\r\n", test_reg16);
   msp_printf("\r\n",0);
@@ -109,7 +123,7 @@ int main(void)
   msp_printf("PROBLEM 2: Setting RD bit\r\n", 0);
 
   // enter your code here for problem 2
-  set_bit(test_reg16, RDbit);
+  test_reg16 = set_bit(test_reg16, RD_BIT_MASK);
   
   msp_printf("    --> Test reg = 0x%04X\r\n", test_reg16);
   msp_printf("\r\n",0);
@@ -121,7 +135,7 @@ int main(void)
   msp_printf("PROBLEM 3: Setting CRS bits\r\n", 0);
 
   // enter your code here for problem 3
-  set_bit(test_reg16, CRSbit);
+  test_reg16 = set_bit(test_reg16, CRS_BIT_MASK);
 
   msp_printf("    --> Test reg = 0x%04X\r\n", test_reg16);
   msp_printf("\r\n",0);
@@ -132,7 +146,8 @@ int main(void)
   // ***************************************************************************
   msp_printf("PROBLEM 4: Setting A[3:0] bits\r\n", 0);
 
-  // enter your code here for problem 4
+  // enter your code here for problem 4                                           /START HERE WHENPICKING BACK UP
+  test_reg16 = set_bit(test_reg16, A3_BIT_MASK);
 
   msp_printf("    --> Test reg = 0x%04X\r\n", test_reg16);
   msp_printf("\r\n",0);
@@ -240,7 +255,10 @@ int main(void)
 // RETURN:
 //  uint16_t - The modified register value with the specified bit(s) set.
 // -----------------------------------------------------------------------------
-
+uint16_t set_bit(uint16_t reg_value, uint16_t bit_mask)
+{
+  return (reg_value | bit_mask);
+}
 
 
 //-----------------------------------------------------------------------------
@@ -259,7 +277,10 @@ int main(void)
 // RETURN:
 //  uint16_t - The modified register value with the specified bit(s) cleared.
 // -----------------------------------------------------------------------------
-
+uint16_t clear_bit(uint16_t reg_value, uint16_t bit_mask)
+{
+ return(reg_value & ~ bit_mask);
+}
 
 
 //-----------------------------------------------------------------------------
@@ -279,3 +300,66 @@ int main(void)
 //  bool - true if the specified bit(s) are set, false otherwise.
 // -----------------------------------------------------------------------------
 
+//-----------------------------------------------------------------------------
+
+// DESCRIPTION:
+
+//  This function formats an integer value into a string according to a given
+
+//  format and sends the resulting string to a serial port.
+
+//
+
+// INPUT PARAMETERS:
+
+//  buffer: A format string used to format the integer value. It follows the
+
+//          format specifiers used by `sprintf`.
+
+//  value:  The integer value to be formatted and included in the formatted
+
+//          string.
+
+//
+
+// OUTPUT PARAMETERS:
+
+//  none
+
+//
+
+// RETURN:
+
+//  none
+
+// -----------------------------------------------------------------------------
+
+void msp_printf(char* buffer, unsigned int value)
+
+{
+
+  unsigned int i = 0;
+
+  unsigned int len = 0;
+
+  char  string[80];
+
+ 
+
+  len = sprintf(string, buffer, value);
+
+ 
+
+  // Walk through array to send each character to serial port
+
+  for (i = 0; i< len; i++)
+
+  {
+
+    UART_out_char(string[i]);
+
+  } /* for */
+
+ 
+
+} /* msp_printf */

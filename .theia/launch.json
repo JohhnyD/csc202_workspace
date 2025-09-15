@@ -40,6 +40,15 @@
                 "name": "Lab3_p1",
                 "resourceId": "/Lab3_p1/Lab3_p1_main.c"
             }
+        },
+        {
+            "name": "Lab3_p1 (1)",
+            "type": "ccs-debug",
+            "request": "launch",
+            "projectInfo": {
+                "name": "Lab3_p1",
+                "resourceId": "/Lab3_p1"
+            }
         }
     ]
 }
