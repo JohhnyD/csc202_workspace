@@ -2,17 +2,17 @@
 //*****************************    C Source Code    ***************************
 //*****************************************************************************
 //
-//  DESIGNER NAME:  TBD
+//  DESIGNER NAME:  
 //
-//       LAB NAME:  Lab 3, part 1
+//       LAB NAME:  
 //
-//      FILE NAME:  TBD.c
+//      FILE NAME:  
 //
 //-----------------------------------------------------------------------------
 //
 // DESCRIPTION:
 //    This program serves as a practice exercise for students to implement 
-//    bitwise operations in C. It includes a series of problems, each 
+//    bitwise operations in Assmebly. It includes a series of problems, each 
 //    requiring the manipulation of bits in a test register using bitwise 
 //    operations. The program initializes the UART communication, sets up 
 //    the system clock, and provides a function 'msp_printf' to print 
@@ -44,28 +44,36 @@
 //-----------------------------------------------------------
 // Define function prototypes used by the program
 //-----------------------------------------------------------
-uint16_t set_bit(uint16_t reg_value, uint16_t bit_mask);
-{
-  return (reg_value | bit_mask);
-}
-
 void msp_printf(char* buffer, unsigned int value);
-uint16_t clear_bit(uint16_t reg_value, uint16_t bit_mask);
-bool check_bit(uint16_t reg_value, uint16_t bit_mask);
+
 
 //-----------------------------------------------------------------------------
 // Define symbolic constants used by program
 //-----------------------------------------------------------------------------
-#define PieBit 0x0001
-#define RDbit 0x0010
-#define CRSbit 0x0070
-#define 
+
+// Uses the shift left operator to create the mask automatically based on 
+// bit position 
+#define A3_BIT_MASK                  (1 << 15)
+#define A2_BIT_MASK                  (1 << 14)
+#define A1_BIT_MASK                  (1 << 13)
+#define A0_BIT_MASK                  (1 << 12)
+#define PRS_BIT_MASK                 (7 << 9)
+#define MODE_BIT_MASK                (3 << 7)
+#define MODE_10_BIT_VALUE            (2 << 7)
+#define MODE_01_BIT_VALUE            (1 << 7)
+#define CRS_BIT_MASK                 (7 << 4)
+#define MD_BIT_MASK                  (1 << 3)
+#define RD_BIT_MASK                  (1 << 2)
+#define EME_BIT_MASK                 (1 << 1)
+#define PIE_BIT_MASK                 (1 << 0)
+
+
 //-----------------------------------------------------------------------------
 // Define global variable and structures here.
 // NOTE: when possible avoid using global variables
 //-----------------------------------------------------------------------------
 
-uint16_t test_reg16 = 0x0000;
+uint16_t test_reg16 = 0xC000;
 
 
 int main(void)
@@ -80,7 +88,7 @@ int main(void)
   UART_init(115200);
 
   msp_printf(" *** PROGRAM RUNNING ***\r\n\r\n",0);
-  msp_printf("CSC-202 ARM M0+ C Bitwise Test Program\r\n",0);
+  msp_printf("CSC-202 ARM M0+ Assembly Bitwise Test Program\r\n",0);
   msp_printf("--------------------------------------------------------\r\n",0);
 
   // Display the size of the test register
@@ -96,8 +104,7 @@ int main(void)
   // ***************************************************************************
   msp_printf("PROBLEM 1: Setting PIE bit\r\n", 0);
 
-  // Enter code below
-  set_bit(test_reg16, PieBit );
+  // enter your code here for problem 1
 
   msp_printf("    --> Test reg = 0x%04X\r\n", test_reg16);
   msp_printf("\r\n",0);
@@ -109,8 +116,7 @@ int main(void)
   msp_printf("PROBLEM 2: Setting RD bit\r\n", 0);
 
   // enter your code here for problem 2
-  set_bit(test_reg16, RDbit);
-  
+
   msp_printf("    --> Test reg = 0x%04X\r\n", test_reg16);
   msp_printf("\r\n",0);
 
@@ -121,7 +127,6 @@ int main(void)
   msp_printf("PROBLEM 3: Setting CRS bits\r\n", 0);
 
   // enter your code here for problem 3
-  set_bit(test_reg16, CRSbit);
 
   msp_printf("    --> Test reg = 0x%04X\r\n", test_reg16);
   msp_printf("\r\n",0);
@@ -184,7 +189,7 @@ int main(void)
   msp_printf("PROBLEM 8: Testing bit A2\r\n", 0);
 
   // enter your code here for problem 8
-  
+
   msp_printf("    --> Test reg = 0x%04X\r\n", test_reg16);
   msp_printf("\r\n",0);
 
@@ -201,7 +206,6 @@ int main(void)
   msp_printf("PROBLEM 9: Testing bit MD & setting mode bits\r\n", 0);
 
   // enter your code here for problem 9
-
 
   msp_printf("    --> Test reg = 0x%04X\r\n", test_reg16);
   msp_printf("\r\n",0);
@@ -220,62 +224,7 @@ int main(void)
 
   msp_printf(" *** PROGRAM TERMINATED ***\r\n",0);
   
-  for(;;);
 
 } /* main */
 
-
-//-----------------------------------------------------------------------------
-// DESCRIPTION:
-//  This function sets the specified bit(s) in a 16-bit register value using
-//  the provided bit mask. It performs a bitwise OR operation to set the bit(s).
-//
-// INPUT PARAMETERS:
-//  reg_value - The original 16-bit register value.
-//  bit_mask  - The bit mask indicating which bit(s) to clear.
-//
-// OUTPUT PARAMETERS:
-//  none
-//
-// RETURN:
-//  uint16_t - The modified register value with the specified bit(s) set.
-// -----------------------------------------------------------------------------
-
-
-
-//-----------------------------------------------------------------------------
-// DESCRIPTION:
-//  This function clears the specified bit(s) in a 16-bit register value using
-//  the provided bit mask. It performs a bitwise AND operation with the
-//  complement of the bit mask to clear the bit(s).
-//
-// INPUT PARAMETERS:
-//  reg_value - The original 16-bit register value.
-//  bit_mask  - The bit mask indicating which bit(s) to clear.
-//
-// OUTPUT PARAMETERS:
-//  none
-//
-// RETURN:
-//  uint16_t - The modified register value with the specified bit(s) cleared.
-// -----------------------------------------------------------------------------
-
-
-
-//-----------------------------------------------------------------------------
-// DESCRIPTION:
-//  This function checks if the specified bit(s) in a 16-bit register value are
-//  set using the provided bit mask. It performs a bitwise AND operation to 
-//  verify if the bit(s) are set.
-//
-// INPUT PARAMETERS:
-//  reg_value - a 16-bit register value to check.
-//  bit_mask  - a 16-bit mask indicating which bit(s) to check.
-//
-// OUTPUT PARAMETERS:
-//  none
-//
-// RETURN:
-//  bool - true if the specified bit(s) are set, false otherwise.
-// -----------------------------------------------------------------------------
 
