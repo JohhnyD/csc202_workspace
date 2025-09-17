@@ -2,11 +2,11 @@
 //*****************************    C Source Code    ***************************
 //*****************************************************************************
 //
-//  DESIGNER NAME:  
+//  DESIGNER NAME:  John Marcello
 //
-//       LAB NAME:  
+//       LAB NAME:  Bitwise Operations with Assembly & C
 //
-//      FILE NAME:  
+//      FILE NAME:  Lab3_p2main.c
 //
 //-----------------------------------------------------------------------------
 //
@@ -45,8 +45,9 @@
 // Define function prototypes used by the program
 //-----------------------------------------------------------
 void msp_printf(char* buffer, unsigned int value);
-
-
+uint16_t my_asm_16bitset(uint16_t reg_value, uint16_t bit_mask);
+uint16_t my_asm_16bitclr(uint16_t reg_value, uint16_t bit_mask);
+uint16_t my_asm_16bitcheck(uint16_t reg_value, uint16_t bit_mask);
 //-----------------------------------------------------------------------------
 // Define symbolic constants used by program
 //-----------------------------------------------------------------------------
@@ -105,6 +106,8 @@ int main(void)
   msp_printf("PROBLEM 1: Setting PIE bit\r\n", 0);
 
   // enter your code here for problem 1
+  
+  test_reg16 = my_asm_16bitset(test_reg16, PIE_BIT_MASK);
 
   msp_printf("    --> Test reg = 0x%04X\r\n", test_reg16);
   msp_printf("\r\n",0);
@@ -116,7 +119,7 @@ int main(void)
   msp_printf("PROBLEM 2: Setting RD bit\r\n", 0);
 
   // enter your code here for problem 2
-
+  test_reg16 = my_asm_16bitset(test_reg16, RD_BIT_MASK);
   msp_printf("    --> Test reg = 0x%04X\r\n", test_reg16);
   msp_printf("\r\n",0);
 
@@ -127,7 +130,7 @@ int main(void)
   msp_printf("PROBLEM 3: Setting CRS bits\r\n", 0);
 
   // enter your code here for problem 3
-
+  test_reg16 = my_asm_16bitset(test_reg16, CRS_BIT_MASK);
   msp_printf("    --> Test reg = 0x%04X\r\n", test_reg16);
   msp_printf("\r\n",0);
 
@@ -138,6 +141,7 @@ int main(void)
   msp_printf("PROBLEM 4: Setting A[3:0] bits\r\n", 0);
 
   // enter your code here for problem 4
+  test_reg16 = my_asm_16bitset(test_reg16, (A3_BIT_MASK | A2_BIT_MASK | A1_BIT_MASK | A0_BIT_MASK));
 
   msp_printf("    --> Test reg = 0x%04X\r\n", test_reg16);
   msp_printf("\r\n",0);
@@ -151,7 +155,15 @@ int main(void)
   msp_printf("PROBLEM 5: Testing bit A2\r\n", 0);
 
   // enter your code here for problem 5
-
+  reg_value = test_reg16;
+  if (my_asm_16bitcheck(test_reg16, A2_BIT_MASK))
+  {
+    msp_printf("Bit A2 is 1\r\n", 0);
+  }/* if */
+  else
+  {
+    msp_printf("The Bit A2 is 0\r\n", 0);
+  }/* else */
   msp_printf("\r\n",0);
 
 
@@ -161,7 +173,7 @@ int main(void)
   msp_printf("PROBLEM 6: Clearing A[2] bit\r\n", 0);
 
   // enter your code here for problem 6
-
+  test_reg16 = my_asm_16bitclr(test_reg16, A2_BIT_MASK);
   msp_printf("    --> Test reg = 0x%04X\r\n", test_reg16);
   msp_printf("\r\n",0);
 
@@ -172,6 +184,9 @@ int main(void)
   msp_printf("PROBLEM 7: Clear CRS bits and set PRS bits\r\n", 0);
 
   // enter your code here for problem 7
+   reg_value = test_reg16;
+  reg_value = my_asm_16bitset(reg_value, PRS_BIT_MASK);
+  test_reg16 = my_asm_16bitclr(reg_value, CRS_BIT_MASK);
 
   msp_printf("    --> Test reg = 0x%04X\r\n", test_reg16);
   msp_printf("\r\n",0);
@@ -189,7 +204,21 @@ int main(void)
   msp_printf("PROBLEM 8: Testing bit A2\r\n", 0);
 
   // enter your code here for problem 8
+  reg_value = test_reg16;
+  if(my_asm_16bitcheck(test_reg16, A2_BIT_MASK))
+  {
+    msp_printf("Bit A2=1 so clearing it\r\n", 0);
 
+    reg_value = my_asm_16bitclr(test_reg16, A2_BIT_MASK);
+    
+  }/* if */
+  else
+  {
+    msp_printf("Bit A2=0 so setting it\r\n", 0);
+
+    reg_value = my_asm_16bitset(test_reg16, A2_BIT_MASK);
+  } /* else */
+  test_reg16 = reg_value;
   msp_printf("    --> Test reg = 0x%04X\r\n", test_reg16);
   msp_printf("\r\n",0);
 
@@ -206,7 +235,20 @@ int main(void)
   msp_printf("PROBLEM 9: Testing bit MD & setting mode bits\r\n", 0);
 
   // enter your code here for problem 9
+  reg_value = test_reg16;
+  if(my_asm_16bitcheck(test_reg16, MD_BIT_MASK))
+  {
+    msp_printf("Bit MD=0, setting mode=10\r\n", 0);
+    reg_value = my_asm_16bitset(test_reg16, MODE_10_BIT_VALUE);
+    test_reg16 = my_asm_16bitclr(test_reg16, MODE_01_BIT_VALUE);
 
+  }/* if */
+  else
+  {
+    msp_printf("Bit MD=1, setting mode=11\r\n", 0);
+    reg_value = my_asm_16bitclr(test_reg16, MODE_01_BIT_VALUE);
+    test_reg16 = my_asm_16bitset(test_reg16, MODE_10_BIT_VALUE);
+  }/* else */
   msp_printf("    --> Test reg = 0x%04X\r\n", test_reg16);
   msp_printf("\r\n",0);
 
@@ -217,7 +259,7 @@ int main(void)
   msp_printf("PROBLEM 10: Clearing all bits\r\n", 0);
 
   // enter your code here for problem 10
-
+  test_reg16 = my_asm_16bitclr(test_reg16,0xFFFF);
   msp_printf("    --> Test reg = 0x%04X\r\n", test_reg16);
   msp_printf("\r\n",0);
 
@@ -227,4 +269,66 @@ int main(void)
 
 } /* main */
 
+//-----------------------------------------------------------------------------
 
+// DESCRIPTION:
+
+//  This function formats an integer value into a string according to a given
+
+//  format and sends the resulting string to a serial port.
+
+//
+
+// INPUT PARAMETERS:
+
+//  buffer: A format string used to format the integer value. It follows the
+
+//          format specifiers used by `sprintf`.
+
+//  value:  The integer value to be formatted and included in the formatted
+
+//          string.
+
+//
+
+// OUTPUT PARAMETERS:
+
+//  none
+
+//
+
+// RETURN:
+
+//  none
+
+// -----------------------------------------------------------------------------
+
+void msp_printf(char* buffer, unsigned int value)
+
+{
+
+  unsigned int i = 0;
+
+  unsigned int len = 0;
+
+  char  string[80];
+
+ 
+
+  len = sprintf(string, buffer, value);
+
+ 
+
+  // Walk through array to send each character to serial port
+
+  for (i = 0; i< len; i++)
+
+  {
+
+    UART_out_char(string[i]);
+
+  } /* for */
+
+ 
+
+} /* msp_printf */
