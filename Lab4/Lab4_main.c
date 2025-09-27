@@ -13,7 +13,9 @@
 //    This project runs on the LP_MSPM0G3507 LaunchPad board interfacing to
 //    the CSC202 Expansion board.
 //
-//    This code tests the use of the LED bar and digital led components on the board
+//    This code tests the use of the LED bar and 7-segment display on the launchpad development board.
+//    By doing so we can better understand and display bit numbers and other information on the LEDS. In addition,
+//    undertand how GPIO pins and the MUX works on the board.
 //
 //*****************************************************************************
 //*****************************************************************************
@@ -56,6 +58,10 @@ void run_lab4_part6(void);
 
 
 // Define a structure to hold different data types
+//-----------------------------------------------------------------------------
+
+// Main Code
+//-----------------------------------------------------------------------------
 
 int main(void)
 {
@@ -113,7 +119,8 @@ int main(void)
  
  // Created functions for each part
 
- //Part 1 function: Turns led on bar based on the value inputed
+//-----------------------------------------------------------------------------
+//Part 1 function: Turns led on bar based on the value inputed
     void run_lab4_part1(void)
     {
        leds_on(0x3C);    //turns leds on 7 segment display from bit 5-2 
@@ -121,9 +128,12 @@ int main(void)
        msec_delay(1000);
     }
 
+//-----------------------------------------------------------------------------
 //Part_2 function:
+// This function will flash the leds on the ledbar from ledindex0 to ledindex7 (0-7 bits) and then loop for a total of 5 times
+// with a 0.2 millisecond delay between each step
 
- void run_lab4_part2(void)
+ void run_lab4_part2(void) 
 {
     int loop_counter = 0;
     while (loop_counter < 5)
@@ -142,9 +152,15 @@ int main(void)
     }
     loop_counter++;
     }
-    
+    led_on(LED_BAR_LD0_IDX);
+    msec_delay(200);
+    led_off(LED_BAR_LD0_IDX);
 }
+//-----------------------------------------------------------------------------
 //Part_3 function:
+//This function displays a bit counter on the led bar graph that goes through all iterations of an 8-bit unsigned integer.
+//It is then put in a loop to repeat the sequence two times
+
  void run_lab4_part3(void)
  {
     uint8_t loop_counterp3 = 0;
@@ -161,6 +177,11 @@ int main(void)
     }
  }
  
+//-----------------------------------------------------------------------------
+//Part 4 function:
+//This function displays the letter L on the 7 segment display on the launchpad development board.
+//To achieve this i created a symbolic constant for the correct 8-bit integer that would display the 
+//letter L on the 7 segement display
  void run_lab4_part4(void)
  {
     seg7_on(LETTERL ,SEG7_DIG0_ENABLE_IDX);
@@ -170,6 +191,10 @@ int main(void)
     
  }
 
+//-----------------------------------------------------------------------------
+//Part 5 function
+//This function displays the number 4 on the 7 segment display 4 times. To achieve this I made another symbolic constant
+//that would display the number 4 and then it is put inside of a loop in order to repeat displaying the number 4 four times.
  void run_lab4_part5(void)
  {
     uint8_t loop_counterp5 = 0;
@@ -184,6 +209,13 @@ int main(void)
     }
  }
 
+//-----------------------------------------------------------------------------
+//Part 6 function:
+//This function displays the word cafe for around 5 seconds. This is done by making symbolic constants for the letters C A F E and figuring
+//what binary number coresponds to the 7 segment display that would display these letters. It is then put in a while loop in order to flash
+//the 7-segment display really fast so all of the letters can be displayed at once. The reason you can't turn all the 7-segment digits on at
+//once is because only one DIG can be turned on at a time, however if you turn them on and off fast enough you will not see the DIG technically
+//turn off.
  void run_lab4_part6(void)
  {
     uint8_t loop_counterp6 = 0;
@@ -201,3 +233,5 @@ int main(void)
            loop_counterp6++;
     }
  }
+
+//-----------------------------------------------------------------------------
