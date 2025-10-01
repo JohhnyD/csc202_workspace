@@ -56,9 +56,13 @@ int main(void)
   // Configure the LaunchPad board
   clock_init_40mhz();
   launchpad_gpio_init();
-
+  
 //Part 1 main
 //-----------------------------------------------------------------------------
+
+dipsw_init();
+seg7_init();
+run_lab5_part1();
 
 // Endless loop to prevent program from ending
  while (1);
@@ -73,7 +77,23 @@ int main(void)
 //Part 1 function: This function will detect if push button 1 is pushed and when so will display a 3 on the 7-segment display.
 //When it is pressed again it turns off the 7-segment display
     void run_lab5_part1(void)
-    
+    {
+        int loopcntr = 0;
+        while (loopcntr < 3)
+        {
+            if (is_pb_down(PB1_IDX))
+            {
+                msec_delay(150);
+                seg7_off();
+                loopcntr++;
+            }
+                else
+                {
+                 msec_delay(150);
+                seg7_on(NUMBER3, SEG7_DIG0_ENABLE_IDX);
+                }
+        }
+    }
 
 //-----------------------------------------------------------------------------
 
