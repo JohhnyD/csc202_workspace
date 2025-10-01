@@ -35,6 +35,7 @@
 // Define function prototypes used by the program
 //-----------------------------------------------------------------------------
 void run_lab5_part1(void);
+void run_lab5_part2(void);
 //-----------------------------------------------------------------------------
 // Define symbolic constants used by the program
 //-----------------------------------------------------------------------------
@@ -56,14 +57,17 @@ int main(void)
   // Configure the LaunchPad board
   clock_init_40mhz();
   launchpad_gpio_init();
-  
+  dipsw_init();
+  seg7_init();
+  lpsw_init();
 //Part 1 main
 //-----------------------------------------------------------------------------
-
-dipsw_init();
-seg7_init();
 run_lab5_part1();
+msec_delay(500);
 
+//Part 2 main
+//-----------------------------------------------------------------------------
+run_lab5_part2();
 // Endless loop to prevent program from ending
  while (1);
 } /* main */ 
@@ -78,25 +82,77 @@ run_lab5_part1();
 //When it is pressed again it turns off the 7-segment display
     void run_lab5_part1(void)
     {
+        bool display_is_on = false;
         int loopcntr = 0;
-        while (loopcntr < 3)
+        seg7_off();
+        while (loopcntr < 6)
         {
-            if (is_pb_down(PB1_IDX))
+            if(is_pb_down(PB1_IDX))
             {
-                msec_delay(150);
-                seg7_off();
-                loopcntr++;
-            }
-                else
+                if(display_is_on)
                 {
-                 msec_delay(150);
-                seg7_on(NUMBER3, SEG7_DIG0_ENABLE_IDX);
+                    seg7_off();
+                    display_is_on = false;
+                    loopcntr++;
+                        while(is_pb_down(PB1_IDX));
+                        msec_delay(10);
                 }
+            else 
+            {
+                seg7_on(NUMBER3, SEG7_DIG0_ENABLE_IDX);
+                display_is_on = true;
+                loopcntr++;
+                msec_delay(10);
+                while(is_pb_down(PB1_IDX))
+                {
+                    msec_delay(10);
+                }
+            }
+            }
+        }
+        seg7_off();
+        leds_off();
+    }
+//-----------------------------------------------------------------------------
+//Part 2 Function:
+//
+    void run_lab5_part2(void)
+    {
+        typedef enum
+        {
+            GET_LOW,
+            GET_HIGH,
+            DISPLAY
+        } dpswstate;
+
+        dpswstate current_state;
+        current_state = GET_LOW;
+        int loopcntr = 0;
+        
+        while(loopcntr < 6)
+        {
+            switch (current_state)
+            {
+                while(is_lpsw_down(LP_SW2_IDX))
+                {
+                    msec_delay(10);
+                }
+                case GET_LOW:
+                uint8_t dipsw_read_LOW = 0;
+                
+                while(is_lpsw_down(LP_SW2_IDX))
+                {
+                    msec_delay(10);
+                }
+                case GET_HIGH:
+                uint8_t dipsw_read_HIGH = dipsw_read();
+                dipsw_read_TOTAL = dipsw_read_LOW + dipsw_read_HIGH;
+
+                case DISPLAY:
+
+            }
         }
     }
-
-//-----------------------------------------------------------------------------
-
 
 //FOR WHEN YOU PICK UP TOMORROW:
 //Basics for this lab is creating flags in order to keep track of the states of the push button and switches (dipswitch)
