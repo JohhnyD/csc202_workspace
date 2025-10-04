@@ -13,7 +13,10 @@
 //    This project runs on the LP_MSPM0G3507 LaunchPad board interfacing to
 //    the CSC202 Expansion board.
 //
-//    This code...
+//    This code uses the input devices on the launchpad development board.
+//    The two input devices that are mainly used is the pushbuttons on the
+//    launchpad and the launchpad development board. In addition, the keypad
+//    is also used for inputs from a user.
 //
 //*****************************************************************************
 //*****************************************************************************
@@ -70,13 +73,13 @@ msec_delay(500);
 
 //Part 2 main
 //-----------------------------------------------------------------------------
-//run_lab5_part2();
+run_lab5_part2();
 msec_delay(500);
 
 //Part 3 main
 //-----------------------------------------------------------------------------
 leds_enable();
-run_lab5_part3();
+//run_lab5_part3();
 // Endless loop to prevent program from ending
  while (1);
 } /* main */ 
@@ -136,62 +139,65 @@ run_lab5_part3();
 
         dpswstate current_state;
         current_state = GET_LOW;
-        int loopcntr2 = 0;
+        uint8_t low_nibble = 0;
+        uint8_t high_nibble = 0;
+        uint8_t seg7_value = 0;
+        uint8_t Display_value = 0;
+        uint8_t loopcntr2 = 0;
         
         while(loopcntr2 < 3)
         {
             switch (current_state)
             {
-                case GET_LOW:
-                while(is_lpsw_down(LP_SW2_IDX))
+                case (GET_LOW):
+                low_nibble = dipsw_read();
+                if(is_lpsw_down(LP_SW2_PORT))
                 {
+                    current_state = GET_HIGH;
+                    msec_delay(10);
+                    while (is_lpsw_down(LP_SW2_PORT))
                     msec_delay(10);
                 }
-                uint8_t dipsw_read_value = dipsw_read();
-                break;
-                case GET_HIGH:
-                while(is_lpsw_down(LP_SW2_IDX))
-                {
-                    msec_delay(10);
-                }
-                current_state = GET_HIGH;
-                dipsw_read_value = dipsw_read_value << 4;
-                dipsw_read_value = dipsw_read();
-                break;
-                case DISPLAY:
-                current_state = DISPLAY;
-                bool display_is_on = false;
-                int loopcntr = 0;
-                seg7_off();
+            break;
 
-                    if(is_pb_down(PB1_IDX))
-                    {
-                    if(display_is_on)
-                    {
-                        seg7_on(dipsw_read_value,SEG7_DIG0_ENABLE_IDX);
-                        display_is_on = false;
-                        loopcntr2++;
-                        while(is_pb_down(PB1_IDX));
-                        msec_delay(10);
-                    }
-                    else 
-                    {
-                    seg7_on(dipsw_read_value, SEG7_DIG2_ENABLE_IDX);
-                    display_is_on = true;
+            case (GET_HIGH):
+                high_nibble = dipsw_read();
+                if(is_lpsw_down(LP_SW2_PORT))
+                {
+                    current_state = DISPLAY;
+                    msec_delay(10);
+                    while (is_lpsw_down(LP_SW2_PORT))
+                    msec_delay(10);
+                }
+            break;
+
+            case DISPLAY:
+                Display_value = ((high_nibble << 4));
+                if (is_pb_down(PB1_IDX))
+                {
+                    seg7_on(Display_value, SEG7_DIG2_ENABLE_IDX);
+                    msec_delay(10);
+                    while (is_pb_down(PB1_IDX));
+                    msec_delay(10);
+                }
+                else
+                {
+                    seg7_on(Display_value, SEG7_DIG0_ENABLE_IDX);
+                }
+
+                if(is_lpsw_down(LP_SW2_PORT))
+                {
+                    current_state = GET_LOW;
+                    seg7_off();
                     loopcntr2++;
                     msec_delay(10);
-                    while(is_pb_down(PB1_IDX))
-                    {
+                    while(is_lpsw_down(LP_SW2_PORT));
                     msec_delay(10);
-                    }
-                    }
                 }
                 break;
             }
         }
-        seg7_off();
-        leds_off();
-
+        
     }
 
 //Part 3 Function:
