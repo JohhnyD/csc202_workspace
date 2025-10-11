@@ -139,6 +139,15 @@
                 "name": "Lab6",
                 "resourceId": "/Lab6/Lab6_main.c"
             }
+        },
+        {
+            "name": "Lab6 (1)",
+            "type": "ccs-debug",
+            "request": "launch",
+            "projectInfo": {
+                "name": "Lab6",
+                "resourceId": "/Lab6/LaunchPad.c"
+            }
         }
     ]
 }
