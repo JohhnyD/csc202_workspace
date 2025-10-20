@@ -13,7 +13,10 @@
 //    This project runs on the LP_MSPM0G3507 LaunchPad board interfacing to
 //    the CSC202 Expansion board.
 //
-//    This code ... *** COMPLETE THIS BASED ON LAB REQUIREMENTS ***
+//    This code expands on knowledge that we learned about the lcd display
+//    in the previous lab and also adds the use of an intrrupt. The intrrupt
+//    allows the program to run multiple tasks at once without interfering
+//    with the main code
 //
 //*****************************************************************************
 //*****************************************************************************
@@ -36,7 +39,11 @@
 // Define function prototypes used by the program
 //-----------------------------------------------------------------------------
 void SysTick_Handler(void);
-
+void run_Lab7_p1 (void);
+void run_Lab7_p2 (void);
+void wait_for_pb_release (uint8_t button);
+void wait_for_pb_pressed (uint8_t button);
+void lcd_write_string_window(const char *string, uint8_t start_lcd_addr,uint8_t max_lcd_addr);
 //-----------------------------------------------------------------------------
 // Define symbolic constants used by the program
 //-----------------------------------------------------------------------------
@@ -73,14 +80,17 @@ int main(void)
   leds_init();
   leds_disable();
   seg7_init();
+  dipsw_init();
   I2C_init();
   lcd1602_init();
-  dipsw_init();
 
 
 
   sys_tick_init(SYST_TICK_PERIOD_COUNT);
-  SysTick_Handler();
+  run_Lab7_p1();
+  run_Lab7_p2();
+  sys_tick_disable();
+  seg7_off();
 
   for(; ; );
 
@@ -116,31 +126,155 @@ void SysTick_Handler(void)
     }/*if*/
 }/*SysTick_Handler*/
 
-void Lab7_p1 (void)
+//-----------------------------------------------------------------------------
+// FPart 1 function: displays a scrolling message on the lcd screen
+//-----------------------------------------------------------------------------
+
+void run_Lab7_p1 (void)
 {
     bool done = false;
-    char message[] = "Microcontroller are fun.";
+    char message[] = "Microcontrollers are fun.";
     uint8_t LCD_Adress;
 
-    while (done!)
+    while (!done)
     {
-        for (LCD_Adress = 0x4F; LCD_Adress > 0x40;)
+
+        for (LCD_Adress = 0x4F; (LCD_Adress > 0x40)&&(!done); LCD_Adress--)
         {
             lcd_clear();
-            lcd_set_ddram_addr(LCD_LINE2_ADDR);
+            lcd_set_ddram_addr(LCD_Adress);
             lcd_write_string(message);
-            delay(200);
+            msec_delay(200);
+
+            if (is_pb_down(PB1_IDX))
+            {
+            done = true;
+            }
         }
 
         uint8_t index = 0;
  
-        while (message [index] != '\o')
+        while ((message [index] != '\0') &&(!done))
         {
             lcd_clear();
-            LCD_Adress = 0x40;
+            lcd_set_ddram_addr(0x40);
             lcd_write_string(message + index);
+            index++;
             msec_delay(200);
+
+            if (is_pb_down(PB1_IDX))
+            {
+            done = true;
+            }
+            
         }
-        
     }
+    lcd_clear();
+    lcd_write_string("Part 1 Done");
+    msec_delay(2000);
+    lcd_set_ddram_addr(LCD_LINE2_ADDR);
+    lcd_write_string("Press PB2");
+    wait_for_pb_pressed(PB2_IDX);
+    lcd_clear();
+    wait_for_pb_release(PB2_IDX);
+    lcd_write_string("Start Part 2");
+    msec_delay(2000);
+    lcd_clear();
 }
+
+//-----------------------------------------------------------------------------
+// Part 2 function: displays a scrolling message on the lcd screen that does
+// not wrap to the first line on the LCD display
+//-----------------------------------------------------------------------------
+
+void run_Lab7_p2 (void)
+{
+    bool done = false;
+    char message[] = "Microcontrollers are fun. I love programming in MSPM0+ assembly code!!!";
+    uint8_t LCD_Adress;
+
+    while (!done)
+    {
+
+        for (LCD_Adress = 0x4F; (LCD_Adress > 0x40)&&(!done); LCD_Adress--)
+        {
+            lcd_clear();
+            lcd_set_ddram_addr(LCD_Adress);
+            lcd_write_string_window(message,LCD_Adress,0x50);
+            msec_delay(200);
+
+            if (is_pb_down(PB1_IDX))
+            {
+            done = true;
+            }
+        }
+        uint8_t index = 0;
+ 
+        while ((message [index] != '\0') &&(!done))
+        {
+            lcd_clear();
+            lcd_set_ddram_addr(0x40);
+            lcd_write_string_window(message + index,0x40,0x50 );
+            index++;
+            msec_delay(200);
+
+            if (is_pb_down(PB1_IDX))
+            {
+            done = true;
+            }
+            
+        }
+    }
+    lcd_clear();
+    lcd_write_string("Part 2 Done");
+    msec_delay(2000);
+    lcd_set_ddram_addr(LCD_LINE2_ADDR);
+    lcd_write_string("Press PB2");
+    wait_for_pb_pressed(PB2_IDX);
+    lcd_clear();
+    wait_for_pb_release(PB2_IDX);
+    lcd_write_string("Start Part 3");
+    msec_delay(2000);
+    lcd_clear();
+    
+    }
+
+//-----------------------------------------------------------------------------
+//Pushbutton wait for pushbutton press function:
+//-----------------------------------------------------------------------------
+
+void wait_for_pb_pressed (uint8_t button)
+{
+    while (is_pb_up(button));
+    msec_delay(10);
+}
+
+//-----------------------------------------------------------------------------
+//Pushbutton wait for pushbutton release function:
+//-----------------------------------------------------------------------------
+
+void wait_for_pb_release (uint8_t button)
+{
+    while (is_pb_down(button));
+    msec_delay(10);
+}
+
+//-----------------------------------------------------------------------------
+//  Function for lcd_write_string_window: This function sets a specific
+//  window on the lcd (line 2) so that a string is only displayed on the bottom
+//  row of the lcd and does not wrap to the top row
+//-----------------------------------------------------------------------------
+
+void lcd_write_string_window(const char *string, uint8_t start_lcd_addr,uint8_t max_lcd_addr)
+{
+    uint8_t counter = start_lcd_addr;
+
+    lcd_set_ddram_addr(start_lcd_addr);
+    // for each character in string, write it to the LCD module
+    while (*string != '\0' && max_lcd_addr > counter )
+    {
+        lcd_write_char(*string++);
+        counter++;
+    } /* while */
+
+} /* lcd_write_string */
