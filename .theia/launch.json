@@ -168,12 +168,12 @@
             }
         },
         {
-            "name": "Lab_8_p1",
+            "name": "Lab8_p1",
             "type": "ccs-debug",
             "request": "launch",
             "projectInfo": {
-                "name": "Lab_8_p1",
-                "resourceId": "/Lab_8_p1/Lab8_p1_main.c"
+                "name": "Lab8_p1",
+                "resourceId": "/Lab8_p1/Lab8_p1_main.c"
             }
         }
     ]
