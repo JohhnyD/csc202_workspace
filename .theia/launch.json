@@ -166,6 +166,15 @@
                 "name": "Lab6",
                 "resourceId": "/Lab6/lcd1602.c"
             }
+        },
+        {
+            "name": "Lab_8_p1",
+            "type": "ccs-debug",
+            "request": "launch",
+            "projectInfo": {
+                "name": "Lab_8_p1",
+                "resourceId": "/Lab_8_p1/Lab8_p1_main.c"
+            }
         }
     ]
 }
