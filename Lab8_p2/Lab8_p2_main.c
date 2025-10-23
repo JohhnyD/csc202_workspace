@@ -1,11 +1,11 @@
 //*****************************************************************************
 //*****************************    C Source Code    ***************************
 //*****************************************************************************
-//  DESIGNER NAME:  John
+//  DESIGNER NAME:  John Marcello
 //
 //       LAB NAME:  Lab 8: Analog to Digital Converter
 //
-//      FILE NAME:  Lab8_p1_main.c
+//      FILE NAME:  Lab8_p2_main.c
 //
 //-----------------------------------------------------------------------------
 //
@@ -36,22 +36,25 @@
 #include "ti/devices/msp/peripherals/hw_gpio.h"
 #include "ti/devices/msp/peripherals/m0p/hw_cpuss.h"
 
+
 //-----------------------------------------------------------------------------
 // Define function prototypes used by the program
 //-----------------------------------------------------------------------------
-void run_lab8_p1 (void);
 void config_pb1_interrupt (void);
 void GROUP1_IRQHandler(void);
+void run_lab8_p2 (void);
 //-----------------------------------------------------------------------------
 // Define symbolic constants used by the program
 //-----------------------------------------------------------------------------
-#define photodiodechannel7 7
+#define potentiometerchannel7 7
+
 //-----------------------------------------------------------------------------
 // Define global variables and structures here.
 // NOTE: when possible avoid using global variables
 //-----------------------------------------------------------------------------
 bool g_pb1_pressed = false;
 bool g_pb2_pressed = false;
+
 
 // Define a structure to hold different data types
 
@@ -61,61 +64,47 @@ int main(void)
   clock_init_40mhz();
   launchpad_gpio_init();
   dipsw_init();
+  leds_init();
+  leds_enable();
   I2C_init();
   lcd1602_init();
-  OPA0_init(6);
-  OPA0_enable();
   ADC0_init(ADC12_MEMCTL_VRSEL_VDDA_VSSA);
 
   config_pb1_interrupt();
+  lcd_clear();
 
-  run_lab8_p1();
+  run_lab8_p2();
  
- NVIC_DisableIRQ(GPIOB_INT_IRQn);
+  NVIC_DisableIRQ(GPIOB_INT_IRQn);
+
  // Endless loop to prevent program from ending
  while (1);
 
 } /* main */
 
-//-----------------------------------------------------------------------------
-// run_lab8_p1 function:
-//-----------------------------------------------------------------------------
-
-
 bool done = false;
 uint16_t ADC_value;
-uint16_t ADC_threshold_value = 2500;
 
-void run_lab8_p1 (void)
+void run_lab8_p2 (void)
 {
-    while(!done)
+
+    while (!done)
     {
-        ADC_value = ADC0_in(photodiodechannel7);
+        ADC_value = ADC0_in(potentiometerchannel7);
+        
+        
+        lcd_set_ddram_addr(LCD_LINE1_ADDR);
+        lcd_write_string("ADC = ");
+        lcd_set_ddram_addr(LCD_LINE1_ADDR + LCD_CHAR_POSITION_10);
+        lcd_write_doublebyte(ADC_value);
 
-        if(ADC_value <= ADC_threshold_value)
-        {
-            msec_delay(500);
-            lcd_clear();
-            lcd_set_ddram_addr(LCD_LINE1_ADDR);
-            lcd_write_string("Status: Dark");
-            lcd_set_ddram_addr(LCD_LINE2_ADDR);
-            lcd_write_string("ADC = ");
-            lcd_set_ddram_addr(LCD_LINE2_ADDR + LCD_CHAR_POSITION_10);
-            lcd_write_doublebyte(ADC_value);
-        }
+        leds_off();
 
-        else
-        {
-            msec_delay(500);
-            lcd_clear();
-            lcd_set_ddram_addr(LCD_LINE1_ADDR);
-            lcd_write_string("Status: Light");
-            lcd_set_ddram_addr(LCD_LINE2_ADDR);
-            lcd_write_string("ADC = ");
-            lcd_set_ddram_addr(LCD_LINE2_ADDR + LCD_CHAR_POSITION_10);
-            lcd_write_doublebyte(ADC_value);
-        }
-
+            for (uint8_t led_idx = LED_BAR_LD0_IDX; led_idx < ADC_value/455;led_idx++)
+            {
+                led_on(led_idx);
+            }
+        
         if (g_pb1_pressed)
         {
             done = true;
@@ -124,9 +113,11 @@ void run_lab8_p1 (void)
 
     }
     lcd_clear();
+    leds_off();
     lcd_write_string("Program Stopped");
-    msec_delay(2000);
 }
+
+
 
 void config_pb1_interrupt (void)
 {
@@ -146,7 +137,7 @@ void GROUP1_IRQHandler(void)
 {
     uint32_t group_gpio_iidx;
     uint32_t gpio_mis;
-
+    
     do
     {
         group_gpio_iidx = CPUSS->INT_GROUP[1].IIDX;

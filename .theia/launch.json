@@ -175,6 +175,33 @@
                 "name": "Lab8_p1",
                 "resourceId": "/Lab8_p1/Lab8_p1_main.c"
             }
+        },
+        {
+            "name": "Lab8_p2",
+            "type": "ccs-debug",
+            "request": "launch",
+            "projectInfo": {
+                "name": "Lab8_p2",
+                "resourceId": "/Lab8_p2/LaunchPad.c"
+            }
+        },
+        {
+            "name": "Lab8_p2 (1)",
+            "type": "ccs-debug",
+            "request": "launch",
+            "projectInfo": {
+                "name": "Lab8_p2",
+                "resourceId": "/Lab8_p2/Lab8_p2_main.c"
+            }
+        },
+        {
+            "name": "Lab8_p1 (1)",
+            "type": "ccs-debug",
+            "request": "launch",
+            "projectInfo": {
+                "name": "Lab8_p1",
+                "resourceId": "/Lab8_p1/uart.h"
+            }
         }
     ]
 }
