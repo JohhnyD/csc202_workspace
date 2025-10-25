@@ -13,7 +13,8 @@
 //    This project runs on the LP_MSPM0G3507 LaunchPad board interfacing to
 //    the CSC202 Expansion board.
 //
-//    This code ... *** COMPLETE THIS BASED ON LAB REQUIREMENTS ***
+//    This code takes the ADC value of the channel of the photodiode sensor and
+//    returns the value back of how much IR is being detected by the sensor
 //
 //*****************************************************************************
 //*****************************************************************************

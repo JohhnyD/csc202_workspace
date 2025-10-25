@@ -5,7 +5,7 @@
 //
 //       LAB NAME:  Lab 8: Analog to Digital Converter
 //
-//      FILE NAME:  Lab8_p2_main.c
+//      FILE NAME:  Lab8_p3_main.c
 //
 //-----------------------------------------------------------------------------
 //
@@ -13,7 +13,12 @@
 //    This project runs on the LP_MSPM0G3507 LaunchPad board interfacing to
 //    the CSC202 Expansion board.
 //
-//    This code ... *** COMPLETE THIS BASED ON LAB REQUIREMENTS ***
+//    This code adds on to part 2 of the lab by using intrrupts for push button
+//    1 and pushbutton 2. Pushbutton 1 takes us out of the program while
+//    pushbutton 2 takes the temerature reading of a room by initalizing
+//    the ADC0 channel 5 for the sensor. The ADC0 value on the LCD displays
+//    the value read off the the poteniometer and the temp is displayed on
+//    line 2 of the LCD
 //
 //*****************************************************************************
 //*****************************************************************************

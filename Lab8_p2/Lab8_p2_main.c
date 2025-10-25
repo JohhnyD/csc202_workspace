@@ -13,7 +13,11 @@
 //    This project runs on the LP_MSPM0G3507 LaunchPad board interfacing to
 //    the CSC202 Expansion board.
 //
-//    This code ... *** COMPLETE THIS BASED ON LAB REQUIREMENTS ***
+//    This code takes the ADC value read by the ADC converter on the launchpad
+//    which changes due to the use of a poteniometer. By reading the value
+//    the poteniometer also contols the led bar and turns on LED's based
+//    on the ADC value. It also uses interrupts in order to get out
+//    of the main code by pushing push button 1
 //
 //*****************************************************************************
 //*****************************************************************************
