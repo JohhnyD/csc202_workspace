@@ -42,7 +42,7 @@
 //-----------------------------------------------------------------------------
 void config_pb1_interrupt (void);
 void GROUP1_IRQHandler(void);
-void run_lab8_p2 (void);
+void run_lab8_p3 (void);
 void config_pb2_interrupt (void);
 //-----------------------------------------------------------------------------
 // Define symbolic constants used by the program
@@ -72,9 +72,10 @@ int main(void)
   ADC0_init(ADC12_MEMCTL_VRSEL_VDDA_VSSA);
 
   config_pb1_interrupt();
+  config_pb2_interrupt();
   lcd_clear();
 
-  run_lab8_p2();
+  run_lab8_p3();
  
   NVIC_DisableIRQ(GPIOB_INT_IRQn);
   NVIC_DisableIRQ(GPIOA_INT_IRQn);
@@ -87,7 +88,7 @@ int main(void)
 bool done = false;
 uint16_t ADC_value;
 
-void run_lab8_p2 (void)
+void run_lab8_p3 (void)
 {
 
     while (!done)
@@ -97,8 +98,16 @@ void run_lab8_p2 (void)
         
         lcd_set_ddram_addr(LCD_LINE1_ADDR);
         lcd_write_string("ADC = ");
-        lcd_set_ddram_addr(LCD_LINE1_ADDR + LCD_CHAR_POSITION_10);
+        lcd_set_ddram_addr(LCD_LINE1_ADDR + LCD_CHAR_POSITION_8);
         lcd_write_doublebyte(ADC_value);
+        lcd_set_ddram_addr(LCD_LINE2_ADDR);
+        lcd_write_string ("Temp = ");
+        lcd_set_ddram_addr(LCD_LINE2_ADDR+ LCD_CHAR_POSITION_12);
+        lcd_write_string("F");
+        lcd_set_ddram_addr(LCD_LINE2_ADDR+ LCD_CHAR_POSITION_11);
+        lcd_write_char (223);
+
+        
 
         leds_off();
 
@@ -111,6 +120,21 @@ void run_lab8_p2 (void)
         {
             done = true;
             g_pb1_pressed = false;
+        }
+        if (g_pb2_pressed)
+        {
+            uint32_t adc_result = 0;
+            uint16_t celcius_reading = 0;
+
+           
+            adc_result = ADC0_in(temperaturechannel);
+
+            celcius_reading = (uint16_t) thermistor_calc_temperature(adc_result);
+
+            lcd_set_ddram_addr(LCD_LINE2_ADDR + LCD_CHAR_POSITION_6);
+            lcd_write_doublebyte(celcius_reading*9/5+32);
+
+            g_pb2_pressed = false;
         }
     }
     lcd_clear();
