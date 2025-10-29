@@ -211,6 +211,33 @@
                 "name": "Lab8_p3",
                 "resourceId": "/Lab8_p3/Lab8_p3_main.c"
             }
+        },
+        {
+            "name": "Lab9_p1",
+            "type": "ccs-debug",
+            "request": "launch",
+            "projectInfo": {
+                "name": "Lab9_p1",
+                "resourceId": "/Lab9_p1/Lab9_p1_main.c"
+            }
+        },
+        {
+            "name": "Lab8_p3 (1)",
+            "type": "ccs-debug",
+            "request": "launch",
+            "projectInfo": {
+                "name": "Lab8_p3",
+                "resourceId": "/Lab8_p3/LaunchPad.c"
+            }
+        },
+        {
+            "name": "Lab9_p1 (1)",
+            "type": "ccs-debug",
+            "request": "launch",
+            "projectInfo": {
+                "name": "Lab9_p1",
+                "resourceId": "/Lab9_p1/LaunchPad.c"
+            }
         }
     ]
 }
