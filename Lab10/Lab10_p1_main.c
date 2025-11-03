@@ -7,6 +7,7 @@
 //
 //      FILE NAME:  Lab10_p1_main.c
 //
+//  (first thing for part 2 is UART_write_string)                                   <-----------------------
 //-----------------------------------------------------------------------------
 //
 // DESCRIPTION:
@@ -42,8 +43,8 @@ void run_lab_uarttest (void);
 //-----------------------------------------------------------------------------
 // Define symbolic constants used by the program
 //-----------------------------------------------------------------------------
-#define buffer_size 8
-
+#define buffer_size 10
+#define buffer_size_max 11
 //-----------------------------------------------------------------------------
 // Define global variables and structures here.
 // NOTE: when possible avoid using global variables
@@ -76,28 +77,33 @@ uint8_t loopcntr = 0;
 
 void run_lab_uarttest (void)
 {
-    char buffer[buffer_size]
+    char buffer[buffer_size];
     uint8_t position_idx = 0;
 
     do
     {
         character = UART_in_char();
-        UART_out_char(character);
 
         if(character == '\r')
         {
             buffer[position_idx] = NULL;
+            UART_out_char(character);
         }
 
-        else if (character = '\b') 
+        else if (character == '\b' && position_idx !=0) 
         {
-            
+            position_idx--;
+            UART_out_char(character);
         }
 
         else
         {
-            buffer[position_idx] = character;
-            position_idx++;
+            if (position_idx < buffer_size_max)
+            {
+                buffer[position_idx] = character;
+                UART_out_char(character);
+                position_idx++;
+            }
         }
         
     }
@@ -105,6 +111,10 @@ void run_lab_uarttest (void)
 
     lcd_clear();
 
+    lcd_set_ddram_addr(LCD_LINE1_ADDR);
+    lcd_write_string("Name:");
+    lcd_set_ddram_addr(LCD_LINE1_ADDR + LCD_CHAR_POSITION_6);
+    lcd_write_string(buffer);
     lcd_set_ddram_addr(LCD_LINE2_ADDR);
     lcd_write_string("Program Done");
 }
