@@ -13,7 +13,14 @@
 //    This project runs on the LP_MSPM0G3507 LaunchPad board interfacing to
 //    the CSC202 Expansion board.
 //
-//    This code ... *** COMPLETE THIS BASED ON LAB REQUIREMENTS ***
+//    This code tests the use of the passive buzzer and active buzzer. Mainly 
+//    the code will show how to enable a specific buzzer or both on the 
+//    launchpad development board. It also uses the LCD screen in order to
+//    display what state the statemachine is in and on the second line
+//    displays what frequency pwm is at and what the DC% is based off
+//    of a user pressing a key on the keypad. Finally this code also uses
+//    the use of the LED_BAR in order to show what buzzers are enabled. 
+//    In addition how changing the dc% can affect how loud the buzzeers are
 //
 //*****************************************************************************
 //*****************************************************************************
@@ -30,11 +37,14 @@
 #include "adc.h"
 #include "clock.h"
 #include "LaunchPad.h"
+#include "demo_melodies.h"
 #include "lcd1602.h"
 #include "ti/devices/msp/m0p/mspm0g350x.h"
 #include "ti/devices/msp/peripherals/hw_adc12.h"
 #include "ti/devices/msp/peripherals/hw_gpio.h"
 #include "ti/devices/msp/peripherals/m0p/hw_cpuss.h"
+#include <stdint.h>
+#include "pitches.h"
 
 //-----------------------------------------------------------------------------
 // Define function prototypes used by the program
@@ -42,8 +52,7 @@
 void config_pb1_interrupt (void);
 void config_pb2_interrupt (void);
 void run_Lab9_p1 (void);
-
-
+void play_note(uint16_t freq, uint16_t duration_ms);
 //-----------------------------------------------------------------------------
 // Define symbolic constants used by the program
 //-----------------------------------------------------------------------------
@@ -75,6 +84,7 @@ int main(void)
  
   // enter your code here
   config_pb2_interrupt();
+  config_pb1_interrupt();
   motor0_pwm_enable();
   run_Lab9_p1();
  
@@ -83,6 +93,19 @@ int main(void)
 
 
 } /* main */
+
+//-----------------------------------------------------------------------------
+// Run_lab9_p1 Function: This function defines a state machine in order to step
+// through different states while using a passive buzzer and active buzzer.
+// The first state is idle where both buzzers are idle and do not produce any
+// sound. The second state enables the active buzzer and disables the passive
+// buzzer. The third is the opposite where the passive buzzer is enabled while
+// the active is disabled. Then both_buzzers as both of the buzzers active. The
+// last state plays a melody while refering to the demo_melodies.h file. All
+// states have a pushbutton interrupt in order to step through the state
+// machine by pressing pushbutton 2. There is also a pushbutton 1 
+// interrupt that exists out of the state machine and ends the program.
+//-----------------------------------------------------------------------------
 
 void run_Lab9_p1 (void)
 {
@@ -118,7 +141,7 @@ typedef enum
                     motor0_set_pwm_dc (DC_value);
                 }
                 lcd_set_ddram_addr(LCD_LINE1_ADDR);
-                lcd_write_string("Buzzers Disabled");
+                lcd_write_string("Buzzers Disabled");  
                 lcd_set_ddram_addr(LCD_LINE2_ADDR);
                 lcd_write_string("F=");
                 lcd_set_ddram_addr(LCD_LINE2_ADDR + LCD_CHAR_POSITION_6);
@@ -239,7 +262,6 @@ typedef enum
             break;
 
             case (PASSIVE_MELODY):
-                Keypad_value = keypad_scan();
 
                 lcd_set_ddram_addr(LCD_LINE1_ADDR + LCD_CHAR_POSITION_3);
                 lcd_write_string("Play Melody");
@@ -256,6 +278,14 @@ typedef enum
                 led_on(LED_BAR_LD1_IDX);
                 led_off(LED_BAR_LD2_IDX);
 
+                // Play the melody
+                for (int i = 0; i < MARIO_LENGTH; i++)
+                {
+                    play_note(mario.frequency, mario.duration_ms);
+                    msec_delay(30); // short pause between notes
+                } /* for */
+
+
                 if (g_pb2_pressed)
                 {
                     lcd_set_ddram_addr(LCD_LINE1_ADDR);
@@ -263,15 +293,20 @@ typedef enum
                     g_pb2_pressed = false;
                     current_state = BUZZER_IDLE;
                 }
+
             break;
             
 
         }
+    if (g_pb1_pressed)
+    {
+        lcd_set_ddram_addr(LCD_LINE1_ADDR);
+        lcd_write_string("                ");
+        g_pb1_pressed = false;
+        done = true;
+    }
   }
-
-
 }
-
 
 void config_pb1_interrupt (void)
 {
@@ -332,8 +367,38 @@ void GROUP1_IRQHandler(void)
     } while (group_gpio_iidx !=0);
 }
 
+//-----------------------------------------------------------------------------
+// motor0set_pwm_freq will take the clock divider and clock scaler in order
+// to set the pwm frequency of a user defined uint16_t varible. It then upfates
+// the load value based on the new PWM frequency and updates it to the load
+// register
+//-----------------------------------------------------------------------------
+
 void motor0_set_pwm_freq(uint16_t pwm_frequency)
 {
-    uint32_t load_value = 200000;
-    motor0_set_pwm_count(load_value/pwm_frequency);                  
-}
+// Determine what the timer clock divider and prescaler are
+uint32_t tim_clk_divider = TIMA0->CLKDIV + 1;
+uint32_t tim_clk_scaler = (TIMA0->COMMONREGS.CPS & GPTIMER_CPS_PCNT_MASK) + 1;
+// Now determine what the timer clock frequency is
+uint32_t tim_clk = get_bus_clock_freq() / (tim_clk_divider * tim_clk_scaler);
+// Update the load value based on new PWM frequency
+uint32_t load_value = (tim_clk / pwm_frequency);
+// Disable timer and update the load register
+motor0_pwm_disable();
+TIMA0->COUNTERREGS.LOAD = (load_value - 1) & GPTIMER_LOAD_LD_MASK;
+} /* */
+
+
+
+void play_note(uint16_t freq, uint16_t duration_ms)
+{
+// Only enable the PWM if we have a frequency
+if (freq != 0)
+{
+motor0_set_pwm_freq(freq);
+motor0_set_pwm_dc(50);
+motor0_pwm_enable();
+msec_delay(duration_ms);
+motor0_pwm_disable();
+} /* if */
+} /* play_note */
