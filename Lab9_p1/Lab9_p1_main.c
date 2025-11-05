@@ -226,7 +226,7 @@ typedef enum
                     g_pb2_pressed = false;
                     current_state = BOTH_BUZZERS;
                 }
-            break;
+            break; 
 
             case (BOTH_BUZZERS):
                 Keypad_value = keypad_scan();
@@ -262,7 +262,7 @@ typedef enum
             break;
 
             case (PASSIVE_MELODY):
-
+                
                 lcd_set_ddram_addr(LCD_LINE1_ADDR + LCD_CHAR_POSITION_3);
                 lcd_write_string("Play Melody");
                 lcd_set_ddram_addr(LCD_LINE2_ADDR);
@@ -281,10 +281,14 @@ typedef enum
                 // Play the melody
                 for (int i = 0; i < MARIO_LENGTH; i++)
                 {
-                    play_note(mario.frequency, mario.duration_ms);
-                    msec_delay(30); // short pause between notes
-                } /* for */
+                    play_note(mario[i].freq, mario[i].duration);
+                    msec_delay(100); // short pause between notes
+                    lcd_set_ddram_addr(LCD_LINE2_ADDR + LCD_CHAR_POSITION_6);
+                    lcd_write_byte(mario[i].freq);
 
+                    lcd_set_ddram_addr(LCD_LINE2_ADDR + LCD_CHAR_POSITION_13);
+                    lcd_write_byte(mario[i].duration);
+                } /* for */
 
                 if (g_pb2_pressed)
                 {
@@ -293,15 +297,14 @@ typedef enum
                     g_pb2_pressed = false;
                     current_state = BUZZER_IDLE;
                 }
-
             break;
             
 
         }
     if (g_pb1_pressed)
     {
-        lcd_set_ddram_addr(LCD_LINE1_ADDR);
-        lcd_write_string("                ");
+        lcd_clear();
+        lcd_write_string("Program Stopped");
         g_pb1_pressed = false;
         done = true;
     }

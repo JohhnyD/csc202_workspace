@@ -247,6 +247,51 @@
                 "name": "Lab10",
                 "resourceId": "/Lab10/Lab10_p1_main.c"
             }
+        },
+        {
+            "name": "Lab9_p1 (2)",
+            "type": "ccs-debug",
+            "request": "launch",
+            "projectInfo": {
+                "name": "Lab9_p1",
+                "resourceId": "/Lab9_p1/demo_melodies.h"
+            }
+        },
+        {
+            "name": "Lab10_p2",
+            "type": "ccs-debug",
+            "request": "launch",
+            "projectInfo": {
+                "name": "Lab10_p2",
+                "resourceId": "/Lab10_p2/Lab10_p2_main.c"
+            }
+        },
+        {
+            "name": "Lab10_p2 (1)",
+            "type": "ccs-debug",
+            "request": "launch",
+            "projectInfo": {
+                "name": "Lab10_p2",
+                "resourceId": "/Lab10_p2/lcd1602.c"
+            }
+        },
+        {
+            "name": "Lab10_p2 (2)",
+            "type": "ccs-debug",
+            "request": "launch",
+            "projectInfo": {
+                "name": "Lab10_p2",
+                "resourceId": "/Lab10_p2/LaunchPad.c"
+            }
+        },
+        {
+            "name": "Lab10_p2 (3)",
+            "type": "ccs-debug",
+            "request": "launch",
+            "projectInfo": {
+                "name": "Lab10_p2",
+                "resourceId": "/Lab10_p2/clock.h"
+            }
         }
     ]
 }

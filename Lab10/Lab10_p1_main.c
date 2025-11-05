@@ -62,18 +62,15 @@ int main(void)
   lcd1602_init();
   UART_init(115200);
 
-  run_lab_uarttest();
-  // enter your code here
+  //run_lab_uarttest(); 
+  
 
- 
  // Endless loop to prevent program from ending
  while (1);
 
 } /* main */
 
 char character;
-
-uint8_t loopcntr = 0;
 
 void run_lab_uarttest (void)
 {
