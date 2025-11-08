@@ -7,14 +7,17 @@
 //
 //      FILE NAME:  Lab10_p1_main.c
 //
-//  (first thing for part 2 is UART_write_string)                                   <-----------------------
 //-----------------------------------------------------------------------------
 //
 // DESCRIPTION:
 //    This project runs on the LP_MSPM0G3507 LaunchPad board interfacing to
 //    the CSC202 Expansion board.
 //
-//    This code ... *** COMPLETE THIS BASED ON LAB REQUIREMENTS ***
+//    This code uses the UART serial communication so a user can input their
+//    name and have it displayed on the LCD screen. This is done by using
+//    UART to store an array of characters that a user sets inside of the
+//    serial console in CCS. Once the user hits enter on the keyboard, the
+//    array (name) will then be displayed on the LCD screen.
 //
 //*****************************************************************************
 //*****************************************************************************
