@@ -1,11 +1,11 @@
 //*****************************************************************************
 //*****************************    C Source Code    ***************************
 //*****************************************************************************
-//  DESIGNER NAME:  TBD
+//  DESIGNER NAME:  John Marcello
 //
-//       LAB NAME:  TBD
+//       LAB NAME:  Lab 10: Serial Communication Interface
 //
-//      FILE NAME:  main.c
+//      FILE NAME:  run_lab10_p2_main.c
 //
 //-----------------------------------------------------------------------------
 //
@@ -13,7 +13,8 @@
 //    This project runs on the LP_MSPM0G3507 LaunchPad board interfacing to
 //    the CSC202 Expansion board.
 //
-//    This code ... *** COMPLETE THIS BASED ON LAB REQUIREMENTS ***
+//    This code displays a menu in the serial console of CCS so a user can
+//    select what option from the menu to execute
 //
 //*****************************************************************************
 //*****************************************************************************
