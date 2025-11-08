@@ -38,8 +38,7 @@
 //-----------------------------------------------------------------------------
 // Define function prototypes used by the program
 //-----------------------------------------------------------------------------
-void run_lab_uarttest (void);
-
+void run_lab10_p1 (void);
 //-----------------------------------------------------------------------------
 // Define symbolic constants used by the program
 //-----------------------------------------------------------------------------
@@ -62,7 +61,7 @@ int main(void)
   lcd1602_init();
   UART_init(115200);
 
-  //run_lab_uarttest(); 
+  run_lab10_p1(); 
   
 
  // Endless loop to prevent program from ending
@@ -70,10 +69,19 @@ int main(void)
 
 } /* main */
 
-char character;
+//-----------------------------------------------------------------------------
+// run_lab10_p1 function: What this function does is displays Name: on the
+// first line of the LCD screen and lets the user input characters in the
+// serial window of CCS. This allows the user to input their name and then
+// once enter is pressed is displays their name on line 1 after Name:
+// and line 2 updates to say program done. This functiton also lets the user
+// hit backspace if they typed their name wrong and allows up to 10 character
+// that can be displayed for their name.
+//-----------------------------------------------------------------------------
 
-void run_lab_uarttest (void)
+void run_lab10_p1 (void)
 {
+    char character;
     char buffer[buffer_size];
     uint8_t position_idx = 0;
 
@@ -81,22 +89,22 @@ void run_lab_uarttest (void)
     {
         character = UART_in_char();
 
-        if(character == '\r')
+        if(character == '\r') // r = enter key
         {
             buffer[position_idx] = NULL;
             UART_out_char(character);
         }
 
-        else if (character == '\b' && position_idx !=0) 
+        else if (character == '\b' && position_idx !=0) // b = backspace
         {
             position_idx--;
             UART_out_char(character);
         }
 
         else
-        {
+        {  
             if (position_idx < buffer_size_max)
-            {
+            {            
                 buffer[position_idx] = character;
                 UART_out_char(character);
                 position_idx++;
