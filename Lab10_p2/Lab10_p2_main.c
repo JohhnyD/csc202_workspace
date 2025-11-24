@@ -1,11 +1,11 @@
 //*****************************************************************************
 //*****************************    C Source Code    ***************************
 //*****************************************************************************
-//  DESIGNER NAME:  TBD
+//  DESIGNER NAME:  John Marcello
 //
-//       LAB NAME:  TBD
+//       LAB NAME:  Lab 10: Serial Communication Interface
 //
-//      FILE NAME:  main.c
+//      FILE NAME:  run_lab10_p2_main.c
 //
 //-----------------------------------------------------------------------------
 //
@@ -13,7 +13,8 @@
 //    This project runs on the LP_MSPM0G3507 LaunchPad board interfacing to
 //    the CSC202 Expansion board.
 //
-//    This code ... *** COMPLETE THIS BASED ON LAB REQUIREMENTS ***
+//    This code displays a menu in the serial console of CCS so a user can
+//    select what option from the menu to execute
 //
 //*****************************************************************************
 //*****************************************************************************
@@ -84,6 +85,16 @@ int main(void)
 
 } /* main */
 
+//-----------------------------------------------------------------------------
+// run_lab10_p2 function: This function defines the structure for a menu that
+// is displayed in the serial console in CCS. It creates a menu in order for
+// a user to select what action they want to perform. The three actions being
+// incramenting a number on the 7-segment display, showing the current temp
+// in the room, and the final main option is flashing the leds on the led-bar.
+// The last option is to end the program. Menu options can be executed by
+// the user typing numbers 1-4.
+//-----------------------------------------------------------------------------
+
 void run_lab10_p2 (void)
 {
     char menu_option = 0;
@@ -148,6 +159,8 @@ void run_lab10_p2 (void)
     while(!done);
 }
 
+// This is the main menu that is displayed in the serial console
+
 void display_menu (void)
 {
     UART_output_string("MENU OPTIONS\r\n");
@@ -157,6 +170,10 @@ void display_menu (void)
     UART_output_string("  4. End Program\r\n");
     UART_output_string("Enter your selection:");
 }
+
+// This code will incrament the number on the 7-segment display and
+// will start on 1 and add up to 9. Then reseting to 0 and restarting
+// the count
 
 void inc_seg7 (bool enable_inc)
 {
@@ -173,6 +190,9 @@ void inc_seg7 (bool enable_inc)
     }
     seg7_hex(seg7_value ,SEG7_DIG3_ENABLE_IDX);
 }
+
+// This function will read the current temperature in the room and
+// display it on the LCD display
 
 void temp_reading (void)
 {
@@ -197,6 +217,9 @@ void temp_reading (void)
     lcd_write_doublebyte(celcius_reading*9/5+32);
 }
 
+// This function flashes the leds on the ledbar while not flashing the 
+// 7-segment display
+
 void leds_flash(void)
 {
     leds_off();
@@ -214,6 +237,9 @@ void leds_flash(void)
     }
     leds_disable();
 }
+
+// This function will output characters in string format in order
+// to display text in the serial console.
 
 void UART_output_string(const char *string)
 {

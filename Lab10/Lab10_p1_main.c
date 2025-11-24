@@ -7,14 +7,17 @@
 //
 //      FILE NAME:  Lab10_p1_main.c
 //
-//  (first thing for part 2 is UART_write_string)                                   <-----------------------
 //-----------------------------------------------------------------------------
 //
 // DESCRIPTION:
 //    This project runs on the LP_MSPM0G3507 LaunchPad board interfacing to
 //    the CSC202 Expansion board.
 //
-//    This code ... *** COMPLETE THIS BASED ON LAB REQUIREMENTS ***
+//    This code uses the UART serial communication so a user can input their
+//    name and have it displayed on the LCD screen. This is done by using
+//    UART to store an array of characters that a user sets inside of the
+//    serial console in CCS. Once the user hits enter on the keyboard, the
+//    array (name) will then be displayed on the LCD screen.
 //
 //*****************************************************************************
 //*****************************************************************************
@@ -38,8 +41,7 @@
 //-----------------------------------------------------------------------------
 // Define function prototypes used by the program
 //-----------------------------------------------------------------------------
-void run_lab_uarttest (void);
-
+void run_lab10_p1 (void);
 //-----------------------------------------------------------------------------
 // Define symbolic constants used by the program
 //-----------------------------------------------------------------------------
@@ -61,8 +63,13 @@ int main(void)
   I2C_init();
   lcd1602_init();
   UART_init(115200);
+<<<<<<< HEAD
   
   //run_lab_uarttest(); 
+=======
+
+  run_lab10_p1(); 
+>>>>>>> 736e6ba387ac64d10b6e89ef9d7c73b64b89a7db
   
 
  // Endless loop to prevent program from ending
@@ -70,10 +77,19 @@ int main(void)
 
 } /* main */
 
-char character;
+//-----------------------------------------------------------------------------
+// run_lab10_p1 function: What this function does is displays Name: on the
+// first line of the LCD screen and lets the user input characters in the
+// serial window of CCS. This allows the user to input their name and then
+// once enter is pressed is displays their name on line 1 after Name:
+// and line 2 updates to say program done. This functiton also lets the user
+// hit backspace if they typed their name wrong and allows up to 10 character
+// that can be displayed for their name.
+//-----------------------------------------------------------------------------
 
-void run_lab_uarttest (void)
+void run_lab10_p1 (void)
 {
+    char character;
     char buffer[buffer_size];
     uint8_t position_idx = 0;
 
@@ -81,22 +97,22 @@ void run_lab_uarttest (void)
     {
         character = UART_in_char();
 
-        if(character == '\r')
+        if(character == '\r') // r = enter key
         {
             buffer[position_idx] = NULL;
             UART_out_char(character);
         }
 
-        else if (character == '\b' && position_idx !=0) 
+        else if (character == '\b' && position_idx !=0) // b = backspace
         {
             position_idx--;
             UART_out_char(character);
         }
 
         else
-        {
+        {  
             if (position_idx < buffer_size_max)
-            {
+            {            
                 buffer[position_idx] = character;
                 UART_out_char(character);
                 position_idx++;
