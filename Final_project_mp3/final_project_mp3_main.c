@@ -1,11 +1,11 @@
 //*****************************************************************************
 //*****************************    C Source Code    ***************************
 //*****************************************************************************
-//  DESIGNER NAME:  John Marcello
+//  DESIGNER NAME:  John & Vinny
 //
-//       LAB NAME:  Lab 11: Serial Peripheral Interface
+//       LAB NAME:  Final Project
 //
-//      FILE NAME:  Lab11_p1_main
+//      FILE NAME:  final_project_mp3_main.c
 //
 //-----------------------------------------------------------------------------
 //
@@ -29,31 +29,30 @@
 #include <ti/devices/msp/msp.h>
 #include "clock.h"
 #include "LaunchPad.h"
-#include "spi.h"
+#include "adc.h"
 #include "lcd1602.h"
-#include "ti/devices/msp/m0p/mspm0g350x.h"
 #include "uart.h"
-
+#include "demo_melodies.h"
+#include "pitches.h"
+#include <stdint.h>
 
 //-----------------------------------------------------------------------------
 // Define function prototypes used by the program
 //-----------------------------------------------------------------------------
-void UART_output_string(const char *string);
-void run_lab11_p1 (void);
+void run_final_project (void);
 void display_menu (void);
-void get_spi_data (void);
-uint16_t string_to_uint16 (char string[]);
-void uint16_to_string ();
+void UART_output_string(const char *string);
 //-----------------------------------------------------------------------------
 // Define symbolic constants used by the program
 //-----------------------------------------------------------------------------
-#define BUFFER_SIZE 3
-#define MAX_BUFFER_LENGTH 4
+#define SERIAL '1'
+#define REPEAT_SONG '2'
+#define RANDOM_SONG '3'
+#define VOLUME '4'
+#define END_PROGRAM '5'
+#define BUFFER_SIZE 1
+#define MAX_BUFFER_LENGTH 2
 #define NEWLINE "\r\n"
-#define SET_DATA_TO_SEND '1'
-#define SEND_DATA '2'
-#define UPDATE_LEDS '3'
-#define END_PROGRAM '4'
 //-----------------------------------------------------------------------------
 // Define global variables and structures here.
 // NOTE: when possible avoid using global variables
@@ -69,32 +68,29 @@ int main(void)
   launchpad_gpio_init();
   I2C_init();
   lcd1602_init();
-  UART_init(115200); 
+  UART_init(115200);
   leds_init();
-  leds_disable();
-  spi1_init();
+  leds_enable();
+  seg7_init();
+  ADC0_init(ADC12_MEMCTL_VRSEL_VDDA_VSSA);
+  motor0_init();
+  motor0_pwm_init(200000/50, 2000);
+  
+  run_final_project();
 
-  
-  run_lab11_p1();
-  
-  // Endless loop to prevent program from ending
-  while (1);
+ while (1);
 
 } /* main */
 
-void run_lab11_p1 (void)
+void run_final_project (void)
 {
-    char character;
     char menu_option = 0;
-    uint8_t position_idx = 0;
-    char buffer[BUFFER_SIZE];
+    uint8_t index    = 0;
+    char buffer[MAX_BUFFER_LENGTH];
     bool done = false;
 
-    lcd_clear();  
-
-    lcd_write_string("Program Running");
-    lcd_set_ddram_addr(LCD_LINE2_ADDR);
-    lcd_write_string("See serial port");
+    lcd_clear(); 
+    leds_disable();
 
     do
         {
@@ -104,71 +100,53 @@ void run_lab11_p1 (void)
 
             switch (menu_option)
             {
-                case SET_DATA_TO_SEND:
+                case SERIAL:
                     UART_output_string(NEWLINE);
-                    UART_output_string("\nSet SPI xmit data menu selected");
-                    UART_output_string("\nEnter a valid decimal number (0 to 255):");
-                    do
-                    {
-                        character = UART_in_char();
-
-                        if(character == '\r')
-                        {
-                            buffer[position_idx] = NULL;
-                            UART_out_char(character);
-                        }
-
-                    else if (character == '\b' && position_idx !=0) 
-                    {
-                        position_idx--;
-                        UART_out_char(character);
-                    }
-
-                    else
-                    {
-                    if (position_idx < MAX_BUFFER_LENGTH)
-                    {
-                        buffer[position_idx] = character;
-                        UART_out_char(character);
-                        position_idx++;
-                    }
-                    }
-        
-                    }
-                    while (character != '\r');
-                    get_spi_data();
+                    UART_output_string("\nSerial Menu Selected");
+                    //funtion here:
                     UART_output_string(NEWLINE);
                     UART_output_string(NEWLINE);
 
                     break;
 
-                case SEND_DATA:
-                    lcd_clear();
+                case REPEAT_SONG:
                     UART_output_string(NEWLINE);
-                    UART_output_string("\nSend Data Menu Selected");
-                    //
+                    UART_output_string("\nRepeat Song Menu Selected");
+                    //funtion here:
                     UART_output_string(NEWLINE);
                     UART_output_string(NEWLINE);
 
                     break;
 
-                case UPDATE_LEDS:
+                case RANDOM_SONG:
                     UART_output_string(NEWLINE);
-                    UART_output_string("\nUpdate LEDs Menu Selected");
-                    //
+                    UART_output_string("\nRandom Song Menu Selected");
+                    //funtion here:
                     UART_output_string(NEWLINE);
                     UART_output_string(NEWLINE);
 
                     break;
                 
+                case VOLUME:
+                    UART_output_string(NEWLINE);
+                    UART_output_string("\nVolume Chnage Menu Selected");
+                    //funtion here:
+                    UART_output_string(NEWLINE);
+                    UART_output_string(NEWLINE);
+                
+                    break;
+
                 case END_PROGRAM:
                     UART_output_string(NEWLINE);
                     UART_output_string("Thank you for using the program!");
                     lcd_clear();
+                    leds_off();
+                    seg7_off();
                     lcd_write_string("Program Stopped");
                     done = true;
                 
                 break;
+                
             }
         }
     while(!done);
@@ -177,10 +155,11 @@ void run_lab11_p1 (void)
 void display_menu (void)
 {
     UART_output_string("MENU OPTIONS\r\n");
-    UART_output_string("  1. Set Data to Send\r\n");
-    UART_output_string("  2. Send Data\r\n");
-    UART_output_string("  3. Update LEDs\r\n");
-    UART_output_string("  4. End Program\r\n");
+    UART_output_string("  1. Serial (Song Selection)\r\n");
+    UART_output_string("  2. Repeat Song\r\n");
+    UART_output_string("  3. Play Random Song\r\n");
+    UART_output_string("  4. Volume Change\r\n");
+    UART_output_string("  5. End Program\r\n");
     UART_output_string("Enter your selection:");
 }
 
@@ -193,26 +172,3 @@ void UART_output_string(const char *string)
     } /* while */
 
 } /* UART_write_string*/
-
-void get_spi_data (void)
-{
-    lcd_clear();
-    lcd_write_string("SEND: ");
-    lcd_set_ddram_addr(LCD_LINE2_ADDR);
-    lcd_write_string("RECV: ");
-}
-
-uint16_t string_to_uint16 (char string[])
-{
-    char set_value = 0; 
-    uint16_t set_value_total = 0;
-
-    while (string[set_value] != '\0')
-    {
-        set_value_total = string[set_value] - '0';
-        set_value_total *= 10;
-        set_value++;
-    }
-    return set_value_total;
-} 
-

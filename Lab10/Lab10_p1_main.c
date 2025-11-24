@@ -61,7 +61,7 @@ int main(void)
   I2C_init();
   lcd1602_init();
   UART_init(115200);
-
+  
   //run_lab_uarttest(); 
   
 
