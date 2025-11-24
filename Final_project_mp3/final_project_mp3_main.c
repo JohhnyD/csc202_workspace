@@ -34,7 +34,7 @@
 #include "uart.h"
 #include "demo_melodies.h"
 #include "pitches.h"
-#include <stdint.h>
+#include <stdint.h> 
 
 //-----------------------------------------------------------------------------
 // Define function prototypes used by the program
@@ -53,6 +53,7 @@ void UART_output_string(const char *string);
 #define BUFFER_SIZE 1
 #define MAX_BUFFER_LENGTH 2
 #define NEWLINE "\r\n"
+#define JOYSTICK_CHANNEL 4
 //-----------------------------------------------------------------------------
 // Define global variables and structures here.
 // NOTE: when possible avoid using global variables
@@ -75,6 +76,7 @@ int main(void)
   ADC0_init(ADC12_MEMCTL_VRSEL_VDDA_VSSA);
   motor0_init();
   motor0_pwm_init(200000/50, 2000);
+  
   
   run_final_project();
 
@@ -172,3 +174,4 @@ void UART_output_string(const char *string)
     } /* while */
 
 } /* UART_write_string*/
+
