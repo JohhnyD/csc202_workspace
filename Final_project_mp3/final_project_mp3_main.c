@@ -45,15 +45,17 @@ void UART_output_string(const char *string);
 //-----------------------------------------------------------------------------
 // Define symbolic constants used by the program
 //-----------------------------------------------------------------------------
-#define SERIAL '1'
-#define REPEAT_SONG '2'
-#define RANDOM_SONG '3'
-#define VOLUME '4'
-#define END_PROGRAM '5'
+#define SERIAL 1
+#define REPEAT_SONG 2
+#define RANDOM_SONG 3
+#define VOLUME 2
+#define END_PROGRAM 3
 #define BUFFER_SIZE 1
 #define MAX_BUFFER_LENGTH 2
 #define NEWLINE "\r\n"
-#define JOYSTICK_CHANNEL 4
+#define JOYSTICK_CHANNEL 7
+#define JOYSTICK_UP 2600
+#define JOYSTICK_DOWN 2400
 //-----------------------------------------------------------------------------
 // Define global variables and structures here.
 // NOTE: when possible avoid using global variables
@@ -86,73 +88,32 @@ int main(void)
 
 void run_final_project (void)
 {
-    char menu_option = 0;
+    uint8_t menu_option = 0;
     uint8_t index    = 0;
     char buffer[MAX_BUFFER_LENGTH];
     bool done = false;
 
     lcd_clear(); 
     leds_disable();
+    uint16_t ADC_value;
 
-    do
+    while(!done)
         {
-            display_menu();
-            menu_option = UART_in_char();
-            UART_out_char(menu_option);
-
-            switch (menu_option)
+            ADC_value = ADC0_in(JOYSTICK_CHANNEL);
+            
+            if (ADC_value/455 < JOYSTICK_DOWN)
             {
-                case SERIAL:
-                    UART_output_string(NEWLINE);
-                    UART_output_string("\nSerial Menu Selected");
-                    //funtion here:
-                    UART_output_string(NEWLINE);
-                    UART_output_string(NEWLINE);
-
-                    break;
-
-                case REPEAT_SONG:
-                    UART_output_string(NEWLINE);
-                    UART_output_string("\nRepeat Song Menu Selected");
-                    //funtion here:
-                    UART_output_string(NEWLINE);
-                    UART_output_string(NEWLINE);
-
-                    break;
-
-                case RANDOM_SONG:
-                    UART_output_string(NEWLINE);
-                    UART_output_string("\nRandom Song Menu Selected");
-                    //funtion here:
-                    UART_output_string(NEWLINE);
-                    UART_output_string(NEWLINE);
-
-                    break;
-                
-                case VOLUME:
-                    UART_output_string(NEWLINE);
-                    UART_output_string("\nVolume Chnage Menu Selected");
-                    //funtion here:
-                    UART_output_string(NEWLINE);
-                    UART_output_string(NEWLINE);
-                
-                    break;
-
-                case END_PROGRAM:
-                    UART_output_string(NEWLINE);
-                    UART_output_string("Thank you for using the program!");
-                    lcd_clear();
-                    leds_off();
-                    seg7_off();
-                    lcd_write_string("Program Stopped");
-                    done = true;
-                
-                break;
-                
+                menu_option++;
             }
+
+            if (ADC_value/455 > JOYSTICK_UP)
+            {
+                menu_option--;
+            }
+
         }
-    while(!done);
 }
+
 
 void display_menu (void)
 {
