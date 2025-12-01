@@ -26,41 +26,41 @@
 //-----------------------------------------------------------------------------
 // Loads MSP launchpad board support macros and definitions
 //-----------------------------------------------------------------------------
-#include <ti/devices/msp/msp.h>
-#include "clock.h"
 #include "LaunchPad.h"
 #include "adc.h"
-#include "lcd1602.h"
-#include "uart.h"
+#include "clock.h"
 #include "demo_melodies.h"
+#include "lcd1602.h"
 #include "pitches.h"
-#include <stdint.h> 
+#include "uart.h"
+#include <stdint.h>
+#include <ti/devices/msp/msp.h>
 
 //-----------------------------------------------------------------------------
 // Define function prototypes used by the program
 //-----------------------------------------------------------------------------
-void run_final_project (void);
-void display_menu (void);
+void run_final_project(void);
+void display_menu(void);
 void UART_output_string(const char *string);
+void config_pb1_interrupt(void);
+void config_pb2_interrupt(void);
+void GROUP1_IRQHandler(void);
 //-----------------------------------------------------------------------------
 // Define symbolic constants used by the program
 //-----------------------------------------------------------------------------
-#define SERIAL 1
-#define REPEAT_SONG 2
-#define RANDOM_SONG 3
-#define VOLUME 2
-#define END_PROGRAM 3
+
 #define BUFFER_SIZE 1
 #define MAX_BUFFER_LENGTH 2
 #define NEWLINE "\r\n"
 #define JOYSTICK_CHANNEL 7
-#define JOYSTICK_UP 2600
-#define JOYSTICK_DOWN 2400
+#define JOYSTICK_UP 3000
+#define JOYSTICK_DOWN 2000
 //-----------------------------------------------------------------------------
 // Define global variables and structures here.
 // NOTE: when possible avoid using global variables
 //-----------------------------------------------------------------------------
-
+bool g_pb1_pressed = false;
+bool g_pb2_pressed = false;
 
 // Define a structure to hold different data types
 
@@ -75,64 +75,329 @@ int main(void)
   leds_init();
   leds_enable();
   seg7_init();
+  dipsw_init();
   ADC0_init(ADC12_MEMCTL_VRSEL_VDDA_VSSA);
   motor0_init();
-  motor0_pwm_init(200000/50, 2000);
-  
-  
+  motor0_pwm_init(200000 / 50, 2000);
+  config_pb1_interrupt();
+  config_pb2_interrupt();
+
   run_final_project();
 
- while (1);
+  NVIC_DisableIRQ(GPIOB_INT_IRQn);
+  NVIC_DisableIRQ(GPIOA_INT_IRQn);
+  while (1)
+    ;
 
 } /* main */
 
-void run_final_project (void)
+void run_final_project(void)
 {
-    uint8_t menu_option = 0;
-    uint8_t index    = 0;
-    char buffer[MAX_BUFFER_LENGTH];
-    bool done = false;
+  lcd_clear();
+  lcd_write_string("Welcome to the");
+  lcd_set_ddram_addr(LCD_LINE2_ADDR);
+  lcd_write_string("Jukebox!");
+  msec_delay(2000);
+  lcd_clear();
+  lcd_write_string("Use Joystick");
+  lcd_set_ddram_addr(LCD_LINE2_ADDR);
+  lcd_write_string("+ pb2 to select");
+  msec_delay(2000);
 
-    lcd_clear(); 
-    leds_disable();
-    uint16_t ADC_value;
+  uint8_t menu_options = 0;
+  uint8_t play_mode    = 0;
+  uint8_t index        = 0;
+  bool    done         = false;
 
-    while(!done)
-        {
-            ADC_value = ADC0_in(JOYSTICK_CHANNEL);
-            
-            if (ADC_value/455 < JOYSTICK_DOWN)
-            {
-                menu_option++;
-            }
+  lcd_clear();
+  leds_disable();
+  uint16_t ADC_value;
+  lcd_clear();
+  leds_disable();
 
-            if (ADC_value/455 > JOYSTICK_UP)
-            {
-                menu_option--;
-            }
+  typedef enum
+  {
+    MAIN_MENU = 0,
+    PLAYMODE,
+    VOLUME,
+    EXIT,
+    SERIAL,
+    RANDOM_SONG,
+    REPEAT_SONG,
+    EXIT_PLAYMODE,
+  } main_menu_state_t;
 
-        }
-}
+  main_menu_state_t current_state;
+  current_state = MAIN_MENU;
 
-
-void display_menu (void)
-{
-    UART_output_string("MENU OPTIONS\r\n");
-    UART_output_string("  1. Serial (Song Selection)\r\n");
-    UART_output_string("  2. Repeat Song\r\n");
-    UART_output_string("  3. Play Random Song\r\n");
-    UART_output_string("  4. Volume Change\r\n");
-    UART_output_string("  5. End Program\r\n");
-    UART_output_string("Enter your selection:");
-}
-
-void UART_output_string(const char *string)
-{
-    // for each character in string, write it to the UART module
-    while (*string != '\0')
+  while (!done)
+  {
+    switch (current_state)
     {
-        UART_out_char(*string++);
-    } /* while */
+      case (MAIN_MENU):
+        if (index < 1)
+        {
+          lcd_clear();
+          lcd_set_ddram_addr(LCD_LINE1_ADDR + LCD_CHAR_POSITION_6);
+          lcd_write_string("PLAY MODE");
+          index++;
+        }
 
-} /* UART_write_string*/
+        ADC_value = ADC0_in(JOYSTICK_CHANNEL);
 
+        if (ADC_value < JOYSTICK_DOWN)
+        {
+          current_state = VOLUME;
+          msec_delay(1000);
+          index = 0;
+        }
+
+        if (g_pb2_pressed)
+        {
+          msec_delay(500);
+          index = 0;
+          g_pb2_pressed = false;
+          current_state = PLAYMODE;
+        }
+
+        break;
+
+      case (PLAYMODE):
+        if (index < 1)
+        {
+          lcd_clear();
+          lcd_set_ddram_addr(LCD_LINE1_ADDR + LCD_CHAR_POSITION_3);
+          lcd_write_string("Song Selection");
+          index++;
+        }
+
+        ADC_value = ADC0_in(JOYSTICK_CHANNEL);
+
+        if (ADC_value < JOYSTICK_DOWN)
+        {
+          current_state = RANDOM_SONG;
+          msec_delay(1000);
+          index = 0;
+        }
+
+        if (g_pb2_pressed)
+        {
+          current_state = SERIAL;
+          g_pb2_pressed = false;
+          index = 0;
+        }
+        break;
+
+      case (SERIAL):
+        if (index < 1)
+        {
+          lcd_clear();
+          lcd_set_ddram_addr(LCD_LINE1_ADDR + LCD_CHAR_POSITION_3);
+          lcd_write_string("test");
+          //funtion here for song player
+        }
+        ADC_value = ADC0_in(JOYSTICK_CHANNEL);
+        
+
+        if (g_pb1_pressed)
+        {
+          current_state = MAIN_MENU;
+          g_pb1_pressed = false;
+          index = 0;
+        }
+
+        break;
+
+      case (RANDOM_SONG):
+        lcd_clear();
+        ADC_value = ADC0_in(JOYSTICK_CHANNEL);
+        // function goes here:
+
+        if (ADC_value < JOYSTICK_DOWN)
+        {
+          current_state = REPEAT_SONG;
+          msec_delay(1000);
+          index = 0;
+        }
+
+        if (ADC_value > JOYSTICK_UP)
+        {
+          current_state = SERIAL;
+          msec_delay(1000);
+          index = 0;
+        }
+
+        if (g_pb1_pressed)
+        {
+          current_state = MAIN_MENU;
+          g_pb1_pressed = false;
+        }
+
+        break;
+
+      case (EXIT_PLAYMODE):
+        lcd_clear();
+        ADC_value = ADC0_in(JOYSTICK_CHANNEL);
+        // function goes here:
+
+        lcd_write_string("Exit Player?");
+        if (ADC_value > JOYSTICK_UP)
+        {
+          current_state = REPEAT_SONG;
+          msec_delay(1000);
+          index = 0;
+        }
+
+        if (g_pb2_pressed)
+        {
+          current_state = MAIN_MENU;
+          g_pb1_pressed = false;
+        }
+
+        break;
+
+      case (REPEAT_SONG):
+        lcd_clear();
+        ADC_value = ADC0_in(JOYSTICK_CHANNEL);
+        // funtion here:
+
+        if (ADC_value > JOYSTICK_UP)
+        {
+          current_state = RANDOM_SONG;
+          msec_delay(1000);
+          index = 0;
+        }
+
+        if (g_pb1_pressed)
+        {
+          current_state = MAIN_MENU;
+          g_pb1_pressed = false;
+        }
+
+        break;
+
+      case (VOLUME):
+        if (index < 1)
+        {
+          lcd_clear();
+          lcd_set_ddram_addr(LCD_LINE2_ADDR);
+          lcd_write_string("Volume:");
+          index++;
+        }
+
+        ADC_value = ADC0_in(JOYSTICK_CHANNEL);
+
+        if (ADC_value < JOYSTICK_DOWN)
+        {
+          current_state = EXIT;
+          msec_delay(1000);
+          index = 0;
+        }
+
+        if (ADC_value > JOYSTICK_UP)
+        {
+          current_state = MAIN_MENU;
+          msec_delay(1000);
+          index = 0;
+        }
+
+        if (g_pb2_pressed)
+        {
+          // function here
+          g_pb1_pressed = false;
+        }
+        break;
+
+      case (EXIT):
+
+        if (index < 1)
+        {
+          lcd_clear();
+          lcd_write_string("Stop Program?");
+          index++;
+        }
+
+        ADC_value = ADC0_in(JOYSTICK_CHANNEL);
+
+        if (g_pb1_pressed)
+        {
+          lcd_clear();
+          lcd_write_string("Bye-Bye!");
+          done          = true;
+          g_pb1_pressed = false;
+        }
+
+        if (ADC_value > JOYSTICK_UP)
+        {
+          current_state = VOLUME;
+          msec_delay(1000);
+          index = 0;
+        }
+        // delay.
+        // turn of lcd.
+
+        break;
+    }
+  }
+}
+
+void config_pb1_interrupt(void)
+{
+  // set PB1 to rising edge (after inversion)
+  GPIOB->POLARITY31_16 = GPIO_POLARITY31_16_DIO18_RISE;
+
+  // Ensure bit is cleared
+  GPIOB->CPU_INT.ICLR = GPIO_CPU_INT_ICLR_DIO18_CLR;
+
+  // Unmask PB1 to allow interrupt
+  GPIOB->CPU_INT.IMASK = GPIO_CPU_INT_IMASK_DIO18_SET;
+
+  NVIC_EnableIRQ(GPIOB_INT_IRQn);
+} /* config_pb1_interrupt */
+
+void config_pb2_interrupt(void)
+{
+  // set PB1 to rising edge (after inversion)
+  GPIOA->POLARITY15_0 = GPIO_POLARITY15_0_DIO15_RISE;
+
+  // Ensure bit is cleared
+  GPIOA->CPU_INT.ICLR = GPIO_CPU_INT_ICLR_DIO15_CLR;
+
+  // Unmask PB1 to allow interrupt
+  GPIOA->CPU_INT.IMASK = GPIO_CPU_INT_IMASK_DIO15_SET;
+
+  NVIC_EnableIRQ(GPIOA_INT_IRQn);
+} /* config_pb1_interrupt */
+
+void GROUP1_IRQHandler(void)
+{
+  uint32_t group_gpio_iidx;
+  uint32_t gpio_mis;
+
+  do
+  {
+    group_gpio_iidx = CPUSS->INT_GROUP[1].IIDX;
+    switch (group_gpio_iidx)
+    {
+      case (CPUSS_INT_GROUP_IIDX_STAT_INT0): // GPIOA
+        gpio_mis = GPIOA->CPU_INT.MIS;
+        if ((gpio_mis & GPIO_CPU_INT_MIS_DIO15_MASK) ==
+            GPIO_CPU_INT_MIS_DIO15_SET)
+        {
+          g_pb2_pressed       = true;
+          GPIOA->CPU_INT.ICLR = GPIO_CPU_INT_ICLR_DIO15_CLR;
+        } /* if */
+
+        break;
+      case (CPUSS_INT_GROUP_IIDX_STAT_INT1): // GPIOB
+        gpio_mis = GPIOB->CPU_INT.MIS;
+        if ((gpio_mis & GPIO_CPU_INT_MIS_DIO18_MASK) ==
+            GPIO_CPU_INT_MIS_DIO18_SET)
+        {
+          g_pb1_pressed       = true;
+          GPIOB->CPU_INT.ICLR = GPIO_CPU_INT_ICLR_DIO18_CLR;
+        } /* if */
+    }
+
+  } while (group_gpio_iidx != 0);
+}

@@ -54,6 +54,7 @@
 // Loads standard C include files
 //-----------------------------------------------------------------------------
 #include <stdint.h>
+#include "clock.h"
 #include "pitches.h"
 
 typedef struct 
@@ -61,6 +62,7 @@ typedef struct
     const char *note;         // Note name as string
     uint16_t freq;            // Frequency in Hz (REST = 0)
     uint16_t duration;        // Duration in milliseconds
+    
 } song_struct_t;
 
 #define IMPERIAL_MARCH_LENGTH 36
