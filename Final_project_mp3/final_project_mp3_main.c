@@ -36,7 +36,6 @@
 #include <stdint.h>
 #include <ti/devices/msp/msp.h>
 
-
 //-----------------------------------------------------------------------------
 // Define function prototypes used by the program
 //-----------------------------------------------------------------------------
@@ -48,6 +47,7 @@ void config_pb2_interrupt(void);
 void GROUP1_IRQHandler(void);
 void motor0_set_pwm_freq(uint16_t pwm_frequency);
 void play_note(uint16_t freq, uint16_t duration_ms, uint16_t note_spacing);
+void play_moog_city(void);
 //-----------------------------------------------------------------------------
 // Define symbolic constants used by the program
 //-----------------------------------------------------------------------------
@@ -59,7 +59,7 @@ void play_note(uint16_t freq, uint16_t duration_ms, uint16_t note_spacing);
 #define JOYSTICK_UP 3000
 #define JOYSTICK_DOWN 2000
 #define MSECJOYSTICK 250
-#define motor0_set_freq 50
+#define motor0_set_freq 5
 //-----------------------------------------------------------------------------
 // Define global variables and structures here.
 // NOTE: when possible avoid using global variables
@@ -205,6 +205,14 @@ void run_final_project(void)
         {
           // function here
           g_pb1_pressed = false;
+          index         = 0;
+        }
+
+        if (g_pb2_pressed)
+        {
+          lcd_clear();
+          play_moog_city();
+          g_pb2_pressed = false;
           index         = 0;
         }
 
@@ -463,3 +471,16 @@ void motor0_set_pwm_freq(uint16_t pwm_frequency)
   motor0_pwm_disable();
   TIMA0->COUNTERREGS.LOAD = (load_value - 1) & GPTIMER_LOAD_LD_MASK;
 } /* */
+
+void play_moog_city(void)
+{
+  led_on(LED_BAR_LD1_IDX);
+  led_off(LED_BAR_LD2_IDX);
+  lcd_set_ddram_addr(LCD_LINE1_ADDR + LCD_CHAR_POSITION_7);
+  for (int i = 0; i < MOOG_CITY_LENGTH; i++)
+  {
+    lcd_write_string(moog_city[i].note);
+    play_note(moog_city[i].freq, moog_city[i].duration,moog_city[i].note_spacing);
+    lcd_clear();
+  } /* for */
+}

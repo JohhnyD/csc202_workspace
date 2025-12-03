@@ -310,6 +310,15 @@
                 "name": "Final_project_mp3",
                 "resourceId": "/Final_project_mp3/final_project_mp3_main.c"
             }
+        },
+        {
+            "name": "Final_project_mp3 (1)",
+            "type": "ccs-debug",
+            "request": "launch",
+            "projectInfo": {
+                "name": "Final_project_mp3",
+                "resourceId": "/Final_project_mp3/minecraft_melodies.h"
+            }
         }
     ]
 }

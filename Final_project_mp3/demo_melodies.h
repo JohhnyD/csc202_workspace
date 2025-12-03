@@ -59,7 +59,7 @@
 
 typedef struct 
 {
-    const char *note;         // Note name as string
+    const char note;         // Note name as string
     uint16_t freq;            // Frequency in Hz (REST = 0)
     uint16_t duration;        // Duration in milliseconds
     uint16_t note_spacing     // Space between each note
