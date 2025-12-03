@@ -402,6 +402,7 @@ motor0_set_pwm_freq(freq);
 motor0_set_pwm_dc(50);
 motor0_pwm_enable();
 msec_delay(duration_ms);
+//add another msec for final project portion
 motor0_pwm_disable();
 } /* if */
 } /* play_note */

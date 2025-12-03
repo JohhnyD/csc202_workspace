@@ -3,7 +3,7 @@
 //*****************************************************************************
 //  DESIGNER NAME:  John & Vinny
 //
-//       LAB NAME:  Final Project
+//       LAB NAME:  Final Project MP3 Player
 //
 //      FILE NAME:  final_project_mp3_main.c
 //
@@ -29,12 +29,13 @@
 #include "LaunchPad.h"
 #include "adc.h"
 #include "clock.h"
-#include "demo_melodies.h"
 #include "lcd1602.h"
+#include "minecraft_melodies.h"
 #include "pitches.h"
 #include "uart.h"
 #include <stdint.h>
 #include <ti/devices/msp/msp.h>
+
 
 //-----------------------------------------------------------------------------
 // Define function prototypes used by the program
@@ -45,6 +46,8 @@ void UART_output_string(const char *string);
 void config_pb1_interrupt(void);
 void config_pb2_interrupt(void);
 void GROUP1_IRQHandler(void);
+void motor0_set_pwm_freq(uint16_t pwm_frequency);
+void play_note(uint16_t freq, uint16_t duration_ms, uint16_t note_spacing);
 //-----------------------------------------------------------------------------
 // Define symbolic constants used by the program
 //-----------------------------------------------------------------------------
@@ -55,6 +58,8 @@ void GROUP1_IRQHandler(void);
 #define JOYSTICK_CHANNEL 7
 #define JOYSTICK_UP 3000
 #define JOYSTICK_DOWN 2000
+#define MSECJOYSTICK 250
+#define motor0_set_freq 50
 //-----------------------------------------------------------------------------
 // Define global variables and structures here.
 // NOTE: when possible avoid using global variables
@@ -138,8 +143,7 @@ void run_final_project(void)
         if (index < 1)
         {
           lcd_clear();
-          lcd_set_ddram_addr(LCD_LINE1_ADDR + LCD_CHAR_POSITION_6);
-          lcd_write_string("PLAY MODE");
+          lcd_write_string("Start Player?");
           index++;
         }
 
@@ -148,14 +152,14 @@ void run_final_project(void)
         if (ADC_value < JOYSTICK_DOWN)
         {
           current_state = VOLUME;
-          msec_delay(1000);
+          msec_delay(MSECJOYSTICK);
           index = 0;
         }
 
         if (g_pb2_pressed)
         {
           msec_delay(500);
-          index = 0;
+          index         = 0;
           g_pb2_pressed = false;
           current_state = PLAYMODE;
         }
@@ -166,7 +170,6 @@ void run_final_project(void)
         if (index < 1)
         {
           lcd_clear();
-          lcd_set_ddram_addr(LCD_LINE1_ADDR + LCD_CHAR_POSITION_3);
           lcd_write_string("Song Selection");
           index++;
         }
@@ -176,7 +179,7 @@ void run_final_project(void)
         if (ADC_value < JOYSTICK_DOWN)
         {
           current_state = RANDOM_SONG;
-          msec_delay(1000);
+          msec_delay(MSECJOYSTICK);
           index = 0;
         }
 
@@ -184,7 +187,7 @@ void run_final_project(void)
         {
           current_state = SERIAL;
           g_pb2_pressed = false;
-          index = 0;
+          index         = 0;
         }
         break;
 
@@ -192,86 +195,116 @@ void run_final_project(void)
         if (index < 1)
         {
           lcd_clear();
-          lcd_set_ddram_addr(LCD_LINE1_ADDR + LCD_CHAR_POSITION_3);
-          lcd_write_string("test");
-          //funtion here for song player
+          lcd_write_string("Song title here");
+          index++;
+          // funtion here for song player
         }
         ADC_value = ADC0_in(JOYSTICK_CHANNEL);
-        
 
         if (g_pb1_pressed)
         {
-          current_state = MAIN_MENU;
+          // function here
           g_pb1_pressed = false;
-          index = 0;
+          index         = 0;
         }
 
         break;
 
       case (RANDOM_SONG):
-        lcd_clear();
+        if (index < 1)
+        {
+          lcd_clear();
+          lcd_write_string("Random Song");
+          index++;
+        }
+
         ADC_value = ADC0_in(JOYSTICK_CHANNEL);
         // function goes here:
 
         if (ADC_value < JOYSTICK_DOWN)
         {
           current_state = REPEAT_SONG;
-          msec_delay(1000);
+          msec_delay(MSECJOYSTICK);
           index = 0;
         }
 
         if (ADC_value > JOYSTICK_UP)
         {
-          current_state = SERIAL;
-          msec_delay(1000);
+          current_state = PLAYMODE;
+          msec_delay(MSECJOYSTICK);
           index = 0;
         }
 
         if (g_pb1_pressed)
         {
-          current_state = MAIN_MENU;
+          // function here
           g_pb1_pressed = false;
+          index         = 0;
         }
 
         break;
 
       case (EXIT_PLAYMODE):
-        lcd_clear();
+        if (index < 1)
+        {
+          lcd_clear();
+          lcd_write_string("Exit Player?");
+          index++;
+        }
         ADC_value = ADC0_in(JOYSTICK_CHANNEL);
         // function goes here:
 
-        lcd_write_string("Exit Player?");
         if (ADC_value > JOYSTICK_UP)
         {
           current_state = REPEAT_SONG;
-          msec_delay(1000);
+          msec_delay(MSECJOYSTICK);
           index = 0;
         }
 
         if (g_pb2_pressed)
         {
+          lcd_clear();
+          lcd_write_string("Going Back to");
+          lcd_set_ddram_addr(LCD_LINE2_ADDR);
+          lcd_write_string("Main Menu");
+          msec_delay(1000);
           current_state = MAIN_MENU;
-          g_pb1_pressed = false;
+          g_pb2_pressed = false;
+          index         = 0;
         }
 
         break;
 
       case (REPEAT_SONG):
-        lcd_clear();
+        if (index < 1)
+        {
+          lcd_clear();
+          lcd_write_string("Repeat Song");
+          index++;
+        }
+
         ADC_value = ADC0_in(JOYSTICK_CHANNEL);
         // funtion here:
 
         if (ADC_value > JOYSTICK_UP)
         {
           current_state = RANDOM_SONG;
-          msec_delay(1000);
+          msec_delay(MSECJOYSTICK);
           index = 0;
         }
 
-        if (g_pb1_pressed)
+        if (g_pb2_pressed)
         {
-          current_state = MAIN_MENU;
-          g_pb1_pressed = false;
+          // function here:
+          g_pb2_pressed = false;
+          index         = 0;
+        }
+
+        if (ADC_value < JOYSTICK_DOWN)
+        {
+          current_state = EXIT_PLAYMODE;
+          msec_delay(MSECJOYSTICK);
+          index = 0;
         }
 
         break;
@@ -280,8 +313,7 @@ void run_final_project(void)
         if (index < 1)
         {
           lcd_clear();
-          lcd_set_ddram_addr(LCD_LINE2_ADDR);
-          lcd_write_string("Volume:");
+          lcd_write_string("Change Volume?");
           index++;
         }
 
@@ -290,21 +322,22 @@ void run_final_project(void)
         if (ADC_value < JOYSTICK_DOWN)
         {
           current_state = EXIT;
-          msec_delay(1000);
+          msec_delay(MSECJOYSTICK);
           index = 0;
         }
 
         if (ADC_value > JOYSTICK_UP)
         {
           current_state = MAIN_MENU;
-          msec_delay(1000);
+          msec_delay(MSECJOYSTICK);
           index = 0;
         }
 
         if (g_pb2_pressed)
         {
-          // function here
+          // function here:
           g_pb1_pressed = false;
+          index         = 0;
         }
         break;
 
@@ -319,18 +352,18 @@ void run_final_project(void)
 
         ADC_value = ADC0_in(JOYSTICK_CHANNEL);
 
-        if (g_pb1_pressed)
+        if (g_pb2_pressed)
         {
           lcd_clear();
           lcd_write_string("Bye-Bye!");
           done          = true;
-          g_pb1_pressed = false;
+          g_pb2_pressed = false;
         }
 
         if (ADC_value > JOYSTICK_UP)
         {
           current_state = VOLUME;
-          msec_delay(1000);
+          msec_delay(MSECJOYSTICK);
           index = 0;
         }
         // delay.
@@ -401,3 +434,32 @@ void GROUP1_IRQHandler(void)
 
   } while (group_gpio_iidx != 0);
 }
+
+void play_note(uint16_t freq, uint16_t duration_ms, uint16_t note_spacing)
+{
+  // Only enable the PWM if we have a frequency
+  if (freq != 0)
+  {
+    motor0_set_pwm_freq(freq);
+    motor0_set_pwm_dc(motor0_set_freq);
+    motor0_pwm_enable();
+    msec_delay(duration_ms);
+    msec_delay(note_spacing);
+    // add another msec for final project portion
+    motor0_pwm_disable();
+  } /* if */
+} /* play_note */
+
+void motor0_set_pwm_freq(uint16_t pwm_frequency)
+{
+  // Determine what the timer clock divider and prescaler are
+  uint32_t tim_clk_divider = TIMA0->CLKDIV + 1;
+  uint32_t tim_clk_scaler = (TIMA0->COMMONREGS.CPS & GPTIMER_CPS_PCNT_MASK) + 1;
+  // Now determine what the timer clock frequency is
+  uint32_t tim_clk = get_bus_clock_freq() / (tim_clk_divider * tim_clk_scaler);
+  // Update the load value based on new PWM frequency
+  uint32_t load_value = (tim_clk / pwm_frequency);
+  // Disable timer and update the load register
+  motor0_pwm_disable();
+  TIMA0->COUNTERREGS.LOAD = (load_value - 1) & GPTIMER_LOAD_LD_MASK;
+} /* */

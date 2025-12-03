@@ -62,74 +62,15 @@ typedef struct
     const char *note;         // Note name as string
     uint16_t freq;            // Frequency in Hz (REST = 0)
     uint16_t duration;        // Duration in milliseconds
-    uint16_t note_spacing     // Space between each note
+    uint16_t note_spacing;     // Space between each note
     
 } song_struct_t;
 
-#define IMPERIAL_MARCH_LENGTH 36
+//#define IMPERIAL_MARCH_LENGTH 36
 
-const song_struct_t imperial_march[IMPERIAL_MARCH_LENGTH] = 
-{
-    {"A4",  NOTE_A4, 500}, {"A4",  NOTE_A4, 500}, {"A4",  NOTE_A4, 500},
-    {"F4",  NOTE_F4, 350}, {"C5",  NOTE_C5, 150}, {"A4",  NOTE_A4, 500},
-    {"F4",  NOTE_F4, 350}, {"C5",  NOTE_C5, 150}, {"A4",  NOTE_A4, 650},
-
-    {"E5",  NOTE_E5, 500}, {"E5",  NOTE_E5, 500}, {"E5",  NOTE_E5, 500},
-    {"F5",  NOTE_F5, 350}, {"C5",  NOTE_C5, 150}, {"G#4", NOTE_GS4, 500},
-    {"F4",  NOTE_F4, 350}, {"C5",  NOTE_C5, 150}, {"A4",  NOTE_A4, 650},
-
-    {"A5",  NOTE_A5, 375}, {"A4",  NOTE_A4, 375}, {"A4",  NOTE_A4, 375},
-    {"A5",  NOTE_A5, 375}, {"G#5", NOTE_GS5, 250}, {"G5",  NOTE_G5, 250},
-    {"F#5", NOTE_FS5, 500}, {"F#5", NOTE_FS5, 500}, {"R",  REST,     1500},
-
-    {"A#4", NOTE_AS4, 250}, {"D#5", NOTE_DS5, 500}, {"A4",  NOTE_A4, 500},
-    {"F#5", NOTE_FS5, 375}, {"D5",  NOTE_D5, 125}, {"D#5", NOTE_DS5, 125},
-    {"D5",  NOTE_D5, 125}, {"C#5", NOTE_CS5, 250}, {"C5",  NOTE_C5, 250}
-};
-
-
-#define MARIO_LENGTH 37
-
-const song_struct_t mario[MARIO_LENGTH] = 
-{
-  {"E5", NOTE_E5, 125}, {"E5", NOTE_E5, 125}, {"R", REST, 125}, 
-  {"E5", NOTE_E5, 125}, {"R", REST, 125}, {"C5", NOTE_C5, 125},
-  {"E5", NOTE_E5, 125}, {"R", REST, 125}, {"G5", NOTE_G5, 375},
-  {"R", REST, 375}, {"G4", NOTE_G4, 375},
-
-  {"C5", NOTE_C5, 125}, {"R", REST, 250}, {"G4", NOTE_G4, 250},
-  {"E4", NOTE_E4, 250}, {"A4", NOTE_A4, 375}, {"B4", NOTE_B4, 375},
-  {"A#4", NOTE_AS4, 125}, {"A4", NOTE_A4, 250},
-
-  {"G4", NOTE_G4, 125}, {"E5", NOTE_E5, 375}, {"G5", NOTE_G5, 250},
-  {"A5", NOTE_A5, 375}, {"F5", NOTE_F5, 125}, {"G5", NOTE_G5, 250},
-
-  {"R", REST, 250}, {"E5", NOTE_E5, 125}, {"C5", NOTE_C5, 250},
-  {"D5", NOTE_D5, 125}, {"B4", NOTE_B4, 250}
-};
-
-// Fur Elise (simplified intro)
-#define FUR_ELISE_LENGTH 31
-
-const song_struct_t fur_elise[FUR_ELISE_LENGTH] = {
-    {"E5", NOTE_E5, 250}, {"D#5", NOTE_DS5, 250}, {"E5", NOTE_E5, 250},
-    {"D#5", NOTE_DS5, 250}, {"E5", NOTE_E5, 250}, {"B4", NOTE_B4, 250},
-    {"D5", NOTE_D5, 250}, {"C5", NOTE_C5, 250},
-
-    {"A4", NOTE_A4, 500}, {"R", REST, 250},
-
-    {"C4", NOTE_C4, 250}, {"E4", NOTE_E4, 250}, {"A4", NOTE_A4, 250},
-    {"B4", NOTE_B4, 500}, {"R", REST, 250},
-
-    {"E4", NOTE_E4, 250}, {"G#4", NOTE_GS4, 250}, {"B4", NOTE_B4, 250},
-    {"C5", NOTE_C5, 500}, {"R", REST, 250},
-
-    {"E4", NOTE_E4, 250}, {"E5", NOTE_E5, 250}, {"D#5", NOTE_DS5, 250},
-    {"E5", NOTE_E5, 250}, {"D#5", NOTE_DS5, 250}, {"E5", NOTE_E5, 250},
-    {"B4", NOTE_B4, 250}, {"D5", NOTE_D5, 250}, {"C5", NOTE_C5, 250},
-
-    {"A4", NOTE_A4, 500}
-};
-
+//const song_struct_t imperial_march[IMPERIAL_MARCH_LENGTH] = 
+//{
+    // example: {"E5", NOTE_E5, 125, 500},
+//};
 
 #endif // __DEMO_MELODIES_H__
