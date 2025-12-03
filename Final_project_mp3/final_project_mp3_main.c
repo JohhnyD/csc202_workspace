@@ -480,7 +480,8 @@ void play_moog_city(void)
   for (int i = 0; i < MOOG_CITY_LENGTH; i++)
   {
     lcd_write_string(moog_city[i].note);
-    play_note(moog_city[i].freq, moog_city[i].duration,moog_city[i].note_spacing);
+    play_note(moog_city[i].freq, moog_city[i].duration,
+              moog_city[i].note_spacing);
     lcd_clear();
   } /* for */
 }

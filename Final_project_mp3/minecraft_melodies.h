@@ -50,7 +50,7 @@
 #ifndef __DEMO_MELODIES_H__
 #define __DEMO_MELODIES_H__
 #define EIGHTH_NOTE_DURATION 113
-#define QUARTER_NOTE_LENGTH 454
+#define QUARTER_NOTE_LENGTH 227
 
 //-----------------------------------------------------------------------------
 // Loads standard C include files
@@ -171,3 +171,6 @@ const song_struct_t moog_city[MOOG_CITY_LENGTH] = {
 };
 
 #endif // __DEMO_MELODIES_H__
+
+//aria math
+//wet hands
