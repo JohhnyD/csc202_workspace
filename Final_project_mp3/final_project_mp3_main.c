@@ -41,13 +41,16 @@
 //-----------------------------------------------------------------------------
 void run_final_project(void);
 void display_menu(void);
-void UART_output_string(const char *string);
 void config_pb1_interrupt(void);
 void config_pb2_interrupt(void);
 void GROUP1_IRQHandler(void);
 void motor0_set_pwm_freq(uint16_t pwm_frequency);
 void play_note(uint16_t freq, uint16_t duration_ms, uint16_t note_spacing);
+void play_song_menu(void);
 void play_moog_city(void);
+void play_aria_math(void);
+void play_living_mice(void);
+void volume_change(void);
 //-----------------------------------------------------------------------------
 // Define symbolic constants used by the program
 //-----------------------------------------------------------------------------
@@ -60,12 +63,14 @@ void play_moog_city(void);
 #define JOYSTICK_DOWN 2000
 #define MSECJOYSTICK 250
 #define motor0_set_freq 5
+#define potentiometerchannel 1
 //-----------------------------------------------------------------------------
 // Define global variables and structures here.
 // NOTE: when possible avoid using global variables
 //-----------------------------------------------------------------------------
 bool g_pb1_pressed = false;
 bool g_pb2_pressed = false;
+uint16_t volume_value = 0;
 
 // Define a structure to hold different data types
 
@@ -79,14 +84,13 @@ int main(void)
   UART_init(115200);
   leds_init();
   leds_enable();
-  seg7_init();
+  leds_disable();
   dipsw_init();
   ADC0_init(ADC12_MEMCTL_VRSEL_VDDA_VSSA);
   motor0_init();
   motor0_pwm_init(200000 / 50, 2000);
   config_pb1_interrupt();
   config_pb2_interrupt();
-
   run_final_project();
 
   NVIC_DisableIRQ(GPIOB_INT_IRQn);
@@ -109,16 +113,14 @@ void run_final_project(void)
   lcd_write_string("+ pb2 to select");
   msec_delay(2000);
 
-  uint8_t menu_options = 0;
-  uint8_t play_mode    = 0;
-  uint8_t index        = 0;
-  bool    done         = false;
+  uint8_t play_mode = 0;
+  uint8_t index     = 0;
+  bool    done      = false;
 
   lcd_clear();
   leds_disable();
   uint16_t ADC_value;
   lcd_clear();
-  leds_disable();
 
   typedef enum
   {
@@ -192,28 +194,11 @@ void run_final_project(void)
         break;
 
       case (SERIAL):
-        if (index < 1)
         {
-          lcd_clear();
-          lcd_write_string("Song title here");
-          index++;
-          // funtion here for song player
-        }
-        ADC_value = ADC0_in(JOYSTICK_CHANNEL);
-
-        if (g_pb1_pressed)
-        {
-          // function here
-          g_pb1_pressed = false;
-          index         = 0;
-        }
-
-        if (g_pb2_pressed)
-        {
-          lcd_clear();
-          play_moog_city();
-          g_pb2_pressed = false;
-          index         = 0;
+            lcd_clear();
+            play_song_menu();
+            index = 0;
+            current_state = PLAYMODE;
         }
 
         break;
@@ -327,6 +312,14 @@ void run_final_project(void)
 
         ADC_value = ADC0_in(JOYSTICK_CHANNEL);
 
+        if (g_pb2_pressed)
+        {
+          volume_change();
+          index         = 0;
+          current_state = MAIN_MENU;
+          g_pb2_pressed = false;
+        }
+
         if (ADC_value < JOYSTICK_DOWN)
         {
           current_state = EXIT;
@@ -341,12 +334,6 @@ void run_final_project(void)
           index = 0;
         }
 
-        if (g_pb2_pressed)
-        {
-          // function here:
-          g_pb1_pressed = false;
-          index         = 0;
-        }
         break;
 
       case (EXIT):
@@ -443,13 +430,13 @@ void GROUP1_IRQHandler(void)
   } while (group_gpio_iidx != 0);
 }
 
-void play_note(uint16_t freq, uint16_t duration_ms, uint16_t note_spacing)
+void play_note(uint16_t freq, uint16_t duration_ms, uint16_t note_spacing)//DtoAnolog could be so speaker voltage could be changed)
 {
   // Only enable the PWM if we have a frequency
   if (freq != 0)
   {
     motor0_set_pwm_freq(freq);
-    motor0_set_pwm_dc(motor0_set_freq);
+    motor0_set_pwm_dc(motor0_set_freq); 
     motor0_pwm_enable();
     msec_delay(duration_ms);
     msec_delay(note_spacing);
@@ -472,6 +459,152 @@ void motor0_set_pwm_freq(uint16_t pwm_frequency)
   TIMA0->COUNTERREGS.LOAD = (load_value - 1) & GPTIMER_LOAD_LD_MASK;
 } /* */
 
+void play_song_menu(void)
+{
+  typedef enum
+  {
+    MOOG_CITY = 0,
+    ARIA_MATH,
+    LIVING_MICE,
+    EXIT,
+  } main_menu_state_t;
+
+  main_menu_state_t current_state_song;
+  current_state_song = MOOG_CITY;
+  bool    complete   = false;
+  uint8_t index      = 0;
+  leds_disable();
+  uint16_t ADC_value;
+
+  while (!complete)
+  {
+    switch (current_state_song)
+    {
+      case (MOOG_CITY):
+        if (index < 1)
+        {
+          lcd_clear();
+          lcd_write_string("Moog City");
+          index++;
+        }
+
+        ADC_value = ADC0_in(JOYSTICK_CHANNEL);
+
+        if (ADC_value < JOYSTICK_DOWN)
+        {
+          current_state_song = ARIA_MATH;
+          msec_delay(MSECJOYSTICK);
+          index = 0;
+        }
+
+        if (g_pb2_pressed)
+        {
+          msec_delay(500);
+          index         = 0;
+          g_pb2_pressed = false;
+          play_moog_city();
+        }
+
+        break;
+        
+        case(ARIA_MATH):
+        if (index < 1)
+        {
+          lcd_clear();
+          lcd_write_string("Aria Math");
+          index++;
+        }
+
+        ADC_value = ADC0_in(JOYSTICK_CHANNEL);
+
+        if (ADC_value < JOYSTICK_DOWN)
+        {
+          current_state_song = LIVING_MICE;
+          msec_delay(MSECJOYSTICK);
+          index = 0;
+        }
+
+        if (ADC_value > JOYSTICK_UP)
+        {
+            current_state_song = MOOG_CITY;
+            msec_delay(MSECJOYSTICK);
+            index = 0;
+        }
+
+        if (g_pb2_pressed)
+        {
+          msec_delay(500);
+          index         = 0;
+          g_pb2_pressed = false;
+          play_aria_math();
+        }
+
+        break;
+
+        case(LIVING_MICE):
+        if (index < 1)
+        {
+          lcd_clear();
+          lcd_write_string("Wet Hands");
+          index++;
+        }
+
+        ADC_value = ADC0_in(JOYSTICK_CHANNEL);
+
+        if (ADC_value < JOYSTICK_DOWN)
+        {
+          current_state_song = EXIT;
+          msec_delay(MSECJOYSTICK);
+          index = 0;
+        }
+
+        if (ADC_value > JOYSTICK_UP)
+        {
+            current_state_song = ARIA_MATH;
+            msec_delay(MSECJOYSTICK);
+            index = 0;
+        }
+
+        if (g_pb2_pressed)
+        {
+          msec_delay(500);
+          index         = 0;
+          g_pb2_pressed = false;
+          play_living_mice();
+        }
+
+        break;
+
+        case(EXIT):
+        if (index < 1)
+        {
+          lcd_clear();
+          lcd_write_string("Exit Player?");
+          index++;
+        }
+
+        if (ADC_value > JOYSTICK_UP)
+        {
+            current_state_song = LIVING_MICE;
+            msec_delay(MSECJOYSTICK);
+            index = 0;
+        }
+
+        if (g_pb2_pressed)
+        {
+          msec_delay(500);
+          lcd_clear();
+          lcd_write_string("Exiting Player");
+          msec_delay(2000);
+          index         = 0;
+          g_pb2_pressed = false;
+          complete = true; 
+        }
+
+    }
+  }
+}
+
 void play_moog_city(void)
 {
   led_on(LED_BAR_LD1_IDX);
@@ -484,4 +617,72 @@ void play_moog_city(void)
               moog_city[i].note_spacing);
     lcd_clear();
   } /* for */
+}
+
+void play_aria_math(void)
+{
+  led_on(LED_BAR_LD1_IDX);
+  led_off(LED_BAR_LD2_IDX);
+  lcd_set_ddram_addr(LCD_LINE1_ADDR + LCD_CHAR_POSITION_7);
+  for (int i = 0; i < ARIA_MATH_LENGTH; i++)
+  {
+    lcd_write_string(aria_math[i].note);
+    play_note(aria_math[i].freq, aria_math[i].duration,
+              aria_math[i].note_spacing);
+    lcd_clear();
+  } /* for */
+}
+
+void play_living_mice(void)
+{
+  led_on(LED_BAR_LD1_IDX);
+  led_off(LED_BAR_LD2_IDX);
+  lcd_set_ddram_addr(LCD_LINE1_ADDR + LCD_CHAR_POSITION_7);
+  for (int i = 0; i < LIVING_MICE_LENGTH; i++)
+  {
+    lcd_write_string(living_mice[i].note);
+    play_note(living_mice[i].freq, living_mice[i].duration,
+              living_mice[i].note_spacing);
+    lcd_clear();
+  } /* for */
+}
+
+void volume_change(void)
+{
+    bool done = false;
+    uint16_t VOLUME_value;
+
+    while (!done)
+    {
+        leds_off();
+        VOLUME_value = ADC0_in(potentiometerchannel);
+        
+        
+        lcd_set_ddram_addr(LCD_LINE1_ADDR);
+        lcd_write_string("Volume = ");
+        lcd_set_ddram_addr(LCD_LINE1_ADDR + LCD_CHAR_POSITION_10);
+        lcd_write_doublebyte(VOLUME_value);
+
+        for (uint8_t led_idx = LED_BAR_LD0_IDX; led_idx < VOLUME_value;led_idx++)
+            {
+                led_on(led_idx);
+            }
+        
+        if (g_pb1_pressed)
+        {
+            g_pb1_pressed = false;
+            motor0_set_pwm_dc(VOLUME_value);
+            lcd_clear();
+            lcd_write_string("Volume Changed to:");
+            lcd_set_ddram_addr(LCD_LINE2_ADDR);
+            lcd_write_doublebyte(VOLUME_value);
+            msec_delay(2000);
+            lcd_clear();
+            lcd_write_string("Exiting Volume");
+            lcd_set_ddram_addr(LCD_LINE2_ADDR);
+            lcd_write_string("Change");
+            msec_delay(2000);
+            done = true; 
+        }
+    }
 }
