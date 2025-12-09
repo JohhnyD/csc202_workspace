@@ -64,7 +64,7 @@ void play_strad(void);
 #define JOYSTICK_UP 3000
 #define JOYSTICK_DOWN 2000
 #define MSECJOYSTICK 250
-#define motor0_set_freq 5
+#define motor0_set_freq 3
 #define potentiometerchannel 1
 //-----------------------------------------------------------------------------
 // Define global variables and structures here.
@@ -447,6 +447,12 @@ void play_song_menu(void)
   leds_disable();
   uint16_t ADC_value;
 
+  lcd_clear();
+  lcd_write_string("Press PB 1 to");
+  lcd_set_ddram_addr(LCD_LINE2_ADDR);
+  lcd_write_string("repeat song");
+  msec_delay(2000);
+
   while (!complete)
   {
     switch (current_state_song)
@@ -579,6 +585,8 @@ void play_song_menu(void)
           ;
         }
 
+        break;
+
       case (STRAD):
         if (index < 1)
         {
@@ -610,8 +618,6 @@ void play_song_menu(void)
           g_pb2_pressed = false;
           play_strad();
         }
-
-        break;
 
         break;
 
@@ -652,21 +658,28 @@ void play_moog_city(void)
 {
   led_on(LED_BAR_LD1_IDX);
   led_off(LED_BAR_LD2_IDX);
-  lcd_set_ddram_addr(LCD_LINE1_ADDR + LCD_CHAR_POSITION_7);
+
   for (int i = 0; i < MOOG_CITY_LENGTH; i++)
   {
     lcd_write_string(moog_city[i].note);
     play_note(moog_city[i].freq, moog_city[i].duration,
               moog_city[i].note_spacing);
     lcd_clear();
+
   } /* for */
+
+  if (g_pb1_pressed)
+  {
+    g_pb1_pressed = false;
+    msec_delay(200);
+    play_moog_city();
+  }
 }
 
 void play_aria_math(void)
 {
   led_on(LED_BAR_LD1_IDX);
   led_off(LED_BAR_LD2_IDX);
-  lcd_set_ddram_addr(LCD_LINE1_ADDR + LCD_CHAR_POSITION_7);
   for (int i = 0; i < ARIA_MATH_LENGTH; i++)
   {
     lcd_write_string(aria_math[i].note);
@@ -674,13 +687,19 @@ void play_aria_math(void)
               aria_math[i].note_spacing);
     lcd_clear();
   } /* for */
+
+  if (g_pb1_pressed)
+  {
+    g_pb1_pressed = false;
+    msec_delay(200);
+    play_aria_math();
+  }
 }
 
 void play_living_mice(void)
 {
   led_on(LED_BAR_LD1_IDX);
   led_off(LED_BAR_LD2_IDX);
-  lcd_set_ddram_addr(LCD_LINE1_ADDR + LCD_CHAR_POSITION_7);
   for (int i = 0; i < LIVING_MICE_LENGTH; i++)
   {
     lcd_write_string(living_mice[i].note);
@@ -688,33 +707,76 @@ void play_living_mice(void)
               living_mice[i].note_spacing);
     lcd_clear();
   } /* for */
+
+  if (g_pb1_pressed)
+  {
+    g_pb1_pressed = false;
+    msec_delay(200);
+    play_living_mice();
+  }
 }
 
 void play_wet_hands(void)
 {
   led_on(LED_BAR_LD1_IDX);
   led_off(LED_BAR_LD2_IDX);
-  lcd_set_ddram_addr(LCD_LINE1_ADDR + LCD_CHAR_POSITION_7);
+  lcd_set_ddram_addr(LCD_LINE1_ADDR);
   for (int i = 0; i < WET_HANDS_LENGTH; i++)
   {
     lcd_write_string(wet_hands[i].note);
     play_note(wet_hands[i].freq, wet_hands[i].duration,
               wet_hands[i].note_spacing);
     lcd_clear();
+
+    if (g_pb2_pressed)
+    {
+      msec_delay(200);
+      uint8_t pause_value = 0;
+      g_pb2_pressed = false;
+      lcd_write_string("Song Paused..."); // If i had more time we could of put it into the
+                             // sytick in order to have a varible that is just
+                             // called stop and play music
+      lcd_set_ddram_addr(LCD_LINE2_ADDR);
+      lcd_write_string("Press PB2 2 play");
+      while (pause_value < 1)
+      {
+        if (g_pb2_pressed)
+        {
+          lcd_clear();
+          g_pb2_pressed= false;
+          msec_delay(200);
+          pause_value++;
+        }
+      }
+    }
+
   } /* for */
+
+  if (g_pb1_pressed)
+  {
+    g_pb1_pressed = false;
+    msec_delay(200);
+    play_wet_hands();
+  }
 }
 
 void play_strad(void)
 {
   led_on(LED_BAR_LD1_IDX);
   led_off(LED_BAR_LD2_IDX);
-  lcd_set_ddram_addr(LCD_LINE1_ADDR + LCD_CHAR_POSITION_7);
   for (int i = 0; i < STRAD_LENGTH; i++)
   {
     lcd_write_string(strad[i].note);
     play_note(strad[i].freq, strad[i].duration, strad[i].note_spacing);
     lcd_clear();
   } /* for */
+
+  if (g_pb1_pressed)
+  {
+    g_pb1_pressed = false;
+    msec_delay(200);
+    play_strad();
+  }
 }
 
 void volume_change(void)
@@ -724,7 +786,7 @@ void volume_change(void)
 
   while (!done)
   {
-    leds_off();
+    leds_enable();
     ADC_value = ADC0_in(JOYSTICK_CHANNEL);
 
     lcd_set_ddram_addr(LCD_LINE1_ADDR);
@@ -732,6 +794,8 @@ void volume_change(void)
     lcd_set_ddram_addr(LCD_LINE1_ADDR + LCD_CHAR_POSITION_10);
     lcd_write_doublebyte(ADC_value);
 
+    leds_off();
+    
     for (uint8_t led_idx = LED_BAR_LD0_IDX; led_idx < ADC_value / 455;
          led_idx++)
     {
@@ -754,6 +818,7 @@ void volume_change(void)
       lcd_set_ddram_addr(LCD_LINE2_ADDR);
       lcd_write_string("Change");
       msec_delay(2000);
+      leds_disable();
       done = true;
     }
   }
