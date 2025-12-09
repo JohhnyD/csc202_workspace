@@ -51,6 +51,8 @@ void play_moog_city(void);
 void play_aria_math(void);
 void play_living_mice(void);
 void volume_change(void);
+void play_wet_hands(void);
+void play_strad(void);
 //-----------------------------------------------------------------------------
 // Define symbolic constants used by the program
 //-----------------------------------------------------------------------------
@@ -68,9 +70,9 @@ void volume_change(void);
 // Define global variables and structures here.
 // NOTE: when possible avoid using global variables
 //-----------------------------------------------------------------------------
-bool g_pb1_pressed = false;
-bool g_pb2_pressed = false;
-uint16_t volume_value = 0;
+bool     g_pb1_pressed = false;
+bool     g_pb2_pressed = false;
+uint16_t volume_value  = 0;
 
 // Define a structure to hold different data types
 
@@ -130,7 +132,6 @@ void run_final_project(void)
     EXIT,
     SERIAL,
     RANDOM_SONG,
-    REPEAT_SONG,
     EXIT_PLAYMODE,
   } main_menu_state_t;
 
@@ -194,14 +195,14 @@ void run_final_project(void)
         break;
 
       case (SERIAL):
-        {
-            lcd_clear();
-            play_song_menu();
-            index = 0;
-            current_state = PLAYMODE;
-        }
+      {
+        lcd_clear();
+        play_song_menu();
+        index         = 0;
+        current_state = PLAYMODE;
+      }
 
-        break;
+      break;
 
       case (RANDOM_SONG):
         if (index < 1)
@@ -216,7 +217,7 @@ void run_final_project(void)
 
         if (ADC_value < JOYSTICK_DOWN)
         {
-          current_state = REPEAT_SONG;
+          current_state = EXIT_PLAYMODE;
           msec_delay(MSECJOYSTICK);
           index = 0;
         }
@@ -249,7 +250,7 @@ void run_final_project(void)
 
         if (ADC_value > JOYSTICK_UP)
         {
-          current_state = REPEAT_SONG;
+          current_state = RANDOM_SONG;
           msec_delay(MSECJOYSTICK);
           index = 0;
         }
@@ -264,40 +265,6 @@ void run_final_project(void)
           current_state = MAIN_MENU;
           g_pb2_pressed = false;
           index         = 0;
-        }
-
-        break;
-
-      case (REPEAT_SONG):
-        if (index < 1)
-        {
-          lcd_clear();
-          lcd_write_string("Repeat Song");
-          index++;
-        }
-
-        ADC_value = ADC0_in(JOYSTICK_CHANNEL);
-        // funtion here:
-
-        if (ADC_value > JOYSTICK_UP)
-        {
-          current_state = RANDOM_SONG;
-          msec_delay(MSECJOYSTICK);
-          index = 0;
-        }
-
-        if (g_pb2_pressed)
-        {
-          // function here:
-          g_pb2_pressed = false;
-          index         = 0;
-        }
-
-        if (ADC_value < JOYSTICK_DOWN)
-        {
-          current_state = EXIT_PLAYMODE;
-          msec_delay(MSECJOYSTICK);
-          index = 0;
         }
 
         break;
@@ -430,13 +397,15 @@ void GROUP1_IRQHandler(void)
   } while (group_gpio_iidx != 0);
 }
 
-void play_note(uint16_t freq, uint16_t duration_ms, uint16_t note_spacing)//DtoAnolog could be so speaker voltage could be changed)
+void play_note(uint16_t freq, uint16_t duration_ms,
+               uint16_t note_spacing) // DtoAnolog could be so speaker voltage
+                                      // could be changed)
 {
   // Only enable the PWM if we have a frequency
   if (freq != 0)
   {
     motor0_set_pwm_freq(freq);
-    motor0_set_pwm_dc(motor0_set_freq); 
+    motor0_set_pwm_dc(motor0_set_freq);
     motor0_pwm_enable();
     msec_delay(duration_ms);
     msec_delay(note_spacing);
@@ -466,6 +435,8 @@ void play_song_menu(void)
     MOOG_CITY = 0,
     ARIA_MATH,
     LIVING_MICE,
+    WET_HANDS,
+    STRAD,
     EXIT,
   } main_menu_state_t;
 
@@ -506,8 +477,8 @@ void play_song_menu(void)
         }
 
         break;
-        
-        case(ARIA_MATH):
+
+      case (ARIA_MATH):
         if (index < 1)
         {
           lcd_clear();
@@ -526,9 +497,9 @@ void play_song_menu(void)
 
         if (ADC_value > JOYSTICK_UP)
         {
-            current_state_song = MOOG_CITY;
-            msec_delay(MSECJOYSTICK);
-            index = 0;
+          current_state_song = MOOG_CITY;
+          msec_delay(MSECJOYSTICK);
+          index = 0;
         }
 
         if (g_pb2_pressed)
@@ -541,11 +512,78 @@ void play_song_menu(void)
 
         break;
 
-        case(LIVING_MICE):
+      case (LIVING_MICE):
+        if (index < 1)
+        {
+          lcd_clear();
+          lcd_write_string("Living Mice");
+          index++;
+        }
+
+        ADC_value = ADC0_in(JOYSTICK_CHANNEL);
+
+        if (ADC_value < JOYSTICK_DOWN)
+        {
+          current_state_song = WET_HANDS;
+          msec_delay(MSECJOYSTICK);
+          index = 0;
+        }
+
+        if (ADC_value > JOYSTICK_UP)
+        {
+          current_state_song = ARIA_MATH;
+          msec_delay(MSECJOYSTICK);
+          index = 0;
+        }
+
+        if (g_pb2_pressed)
+        {
+          msec_delay(500);
+          index         = 0;
+          g_pb2_pressed = false;
+          play_living_mice();
+        }
+
+        break;
+
+      case (WET_HANDS):
         if (index < 1)
         {
           lcd_clear();
           lcd_write_string("Wet Hands");
+          index++;
+        }
+
+        ADC_value = ADC0_in(JOYSTICK_CHANNEL);
+
+        if (ADC_value < JOYSTICK_DOWN)
+        {
+          current_state_song = STRAD;
+          msec_delay(MSECJOYSTICK);
+          index = 0;
+        }
+
+        if (ADC_value > JOYSTICK_UP)
+        {
+          current_state_song = LIVING_MICE;
+          msec_delay(MSECJOYSTICK);
+          index = 0;
+        }
+
+        if (g_pb2_pressed)
+        {
+          msec_delay(500);
+          index         = 0;
+          g_pb2_pressed = false;
+          play_wet_hands();
+          ;
+        }
+
+      case (STRAD):
+        if (index < 1)
+        {
+          lcd_clear();
+          lcd_write_string("Strad");
           index++;
         }
 
@@ -560,9 +598,9 @@ void play_song_menu(void)
 
         if (ADC_value > JOYSTICK_UP)
         {
-            current_state_song = ARIA_MATH;
-            msec_delay(MSECJOYSTICK);
-            index = 0;
+          current_state_song = WET_HANDS;
+          msec_delay(MSECJOYSTICK);
+          index = 0;
         }
 
         if (g_pb2_pressed)
@@ -570,24 +608,30 @@ void play_song_menu(void)
           msec_delay(500);
           index         = 0;
           g_pb2_pressed = false;
-          play_living_mice();
+          play_strad();
         }
 
         break;
 
-        case(EXIT):
+        break;
+
+      case (EXIT):
         if (index < 1)
         {
           lcd_clear();
-          lcd_write_string("Exit Player?");
+          lcd_write_string("Exit Song");
+          lcd_set_ddram_addr(LCD_LINE2_ADDR);
+          lcd_write_string("Slection?");
           index++;
         }
 
+        ADC_value = ADC0_in(JOYSTICK_CHANNEL);
+
         if (ADC_value > JOYSTICK_UP)
         {
-            current_state_song = LIVING_MICE;
-            msec_delay(MSECJOYSTICK);
-            index = 0;
+          current_state_song = STRAD;
+          msec_delay(MSECJOYSTICK);
+          index = 0;
         }
 
         if (g_pb2_pressed)
@@ -598,9 +642,8 @@ void play_song_menu(void)
           msec_delay(2000);
           index         = 0;
           g_pb2_pressed = false;
-          complete = true; 
+          complete      = true;
         }
-
     }
   }
 }
@@ -647,42 +690,71 @@ void play_living_mice(void)
   } /* for */
 }
 
+void play_wet_hands(void)
+{
+  led_on(LED_BAR_LD1_IDX);
+  led_off(LED_BAR_LD2_IDX);
+  lcd_set_ddram_addr(LCD_LINE1_ADDR + LCD_CHAR_POSITION_7);
+  for (int i = 0; i < WET_HANDS_LENGTH; i++)
+  {
+    lcd_write_string(wet_hands[i].note);
+    play_note(wet_hands[i].freq, wet_hands[i].duration,
+              wet_hands[i].note_spacing);
+    lcd_clear();
+  } /* for */
+}
+
+void play_strad(void)
+{
+  led_on(LED_BAR_LD1_IDX);
+  led_off(LED_BAR_LD2_IDX);
+  lcd_set_ddram_addr(LCD_LINE1_ADDR + LCD_CHAR_POSITION_7);
+  for (int i = 0; i < STRAD_LENGTH; i++)
+  {
+    lcd_write_string(strad[i].note);
+    play_note(strad[i].freq, strad[i].duration, strad[i].note_spacing);
+    lcd_clear();
+  } /* for */
+}
+
 void volume_change(void)
 {
-    bool done = false;
-    uint16_t VOLUME_value;
+  bool     done = false;
+  uint16_t ADC_value;
 
-    while (!done)
+  while (!done)
+  {
+    leds_off();
+    ADC_value = ADC0_in(JOYSTICK_CHANNEL);
+
+    lcd_set_ddram_addr(LCD_LINE1_ADDR);
+    lcd_write_string("Volume = ");
+    lcd_set_ddram_addr(LCD_LINE1_ADDR + LCD_CHAR_POSITION_10);
+    lcd_write_doublebyte(ADC_value);
+
+    for (uint8_t led_idx = LED_BAR_LD0_IDX; led_idx < ADC_value / 455;
+         led_idx++)
     {
-        leds_off();
-        VOLUME_value = ADC0_in(potentiometerchannel);
-        
-        
-        lcd_set_ddram_addr(LCD_LINE1_ADDR);
-        lcd_write_string("Volume = ");
-        lcd_set_ddram_addr(LCD_LINE1_ADDR + LCD_CHAR_POSITION_10);
-        lcd_write_doublebyte(VOLUME_value);
-
-        for (uint8_t led_idx = LED_BAR_LD0_IDX; led_idx < VOLUME_value;led_idx++)
-            {
-                led_on(led_idx);
-            }
-        
-        if (g_pb1_pressed)
-        {
-            g_pb1_pressed = false;
-            motor0_set_pwm_dc(VOLUME_value);
-            lcd_clear();
-            lcd_write_string("Volume Changed to:");
-            lcd_set_ddram_addr(LCD_LINE2_ADDR);
-            lcd_write_doublebyte(VOLUME_value);
-            msec_delay(2000);
-            lcd_clear();
-            lcd_write_string("Exiting Volume");
-            lcd_set_ddram_addr(LCD_LINE2_ADDR);
-            lcd_write_string("Change");
-            msec_delay(2000);
-            done = true; 
-        }
+      led_on(led_idx);
     }
+
+    if (g_pb1_pressed)
+    {
+      g_pb1_pressed = false;
+      motor0_set_pwm_dc(ADC_value);
+      lcd_clear();
+      lcd_write_string("Volume Changed");
+      lcd_set_ddram_addr(LCD_LINE2_ADDR);
+      lcd_write_string("to:");
+      lcd_set_ddram_addr(LCD_LINE2_ADDR + LCD_CHAR_POSITION_5);
+      lcd_write_doublebyte(ADC_value);
+      msec_delay(2000);
+      lcd_clear();
+      lcd_write_string("Exiting Volume");
+      lcd_set_ddram_addr(LCD_LINE2_ADDR);
+      lcd_write_string("Change");
+      msec_delay(2000);
+      done = true;
+    }
+  }
 }
