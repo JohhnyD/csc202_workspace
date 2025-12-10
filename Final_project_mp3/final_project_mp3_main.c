@@ -1,7 +1,7 @@
 //*****************************************************************************
 //*****************************    C Source Code    ***************************
 //*****************************************************************************
-//  DESIGNER NAME:  John & Vinny
+//  DESIGNER NAME:  John Marcello & Vinny Vath
 //
 //       LAB NAME:  Final Project MP3 Player
 //
@@ -22,6 +22,8 @@
 // Loads standard C include files
 //-----------------------------------------------------------------------------
 #include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 
 //-----------------------------------------------------------------------------
 // Loads MSP launchpad board support macros and definitions
@@ -39,7 +41,7 @@
 //-----------------------------------------------------------------------------
 // Define function prototypes used by the program
 //-----------------------------------------------------------------------------
-void run_final_project(void);
+void run_final_project_main(void);
 void display_menu(void);
 void config_pb1_interrupt(void);
 void config_pb2_interrupt(void);
@@ -53,18 +55,16 @@ void play_living_mice(void);
 void volume_change(void);
 void play_wet_hands(void);
 void play_strad(void);
+void random_song(void);
+void lcd_write_arrow(void);
 //-----------------------------------------------------------------------------
 // Define symbolic constants used by the program
 //-----------------------------------------------------------------------------
-
-#define BUFFER_SIZE 1
-#define MAX_BUFFER_LENGTH 2
-#define NEWLINE "\r\n"
 #define JOYSTICK_CHANNEL 7
 #define JOYSTICK_UP 3000
 #define JOYSTICK_DOWN 2000
 #define MSECJOYSTICK 250
-#define motor0_set_freq 3
+#define motor0_set_freq 5
 #define potentiometerchannel 1
 //-----------------------------------------------------------------------------
 // Define global variables and structures here.
@@ -93,7 +93,8 @@ int main(void)
   motor0_pwm_init(200000 / 50, 2000);
   config_pb1_interrupt();
   config_pb2_interrupt();
-  run_final_project();
+
+  run_final_project_main();
 
   NVIC_DisableIRQ(GPIOB_INT_IRQn);
   NVIC_DisableIRQ(GPIOA_INT_IRQn);
@@ -102,7 +103,7 @@ int main(void)
 
 } /* main */
 
-void run_final_project(void)
+void run_final_project_main(void)
 {
   lcd_clear();
   lcd_write_string("Welcome to the");
@@ -229,11 +230,11 @@ void run_final_project(void)
           index = 0;
         }
 
-        if (g_pb1_pressed)
+        if (g_pb2_pressed)
         {
-          // function here
-          g_pb1_pressed = false;
-          index         = 0;
+          g_pb2_pressed = false;
+          random_song();
+          index = 0;
         }
 
         break;
@@ -452,6 +453,11 @@ void play_song_menu(void)
   lcd_set_ddram_addr(LCD_LINE2_ADDR);
   lcd_write_string("repeat song");
   msec_delay(2000);
+  lcd_clear();
+  lcd_write_string("Press PB 2 to");
+  lcd_set_ddram_addr(LCD_LINE2_ADDR);
+  lcd_write_string("Pause and Play");
+  msec_delay(2000);
 
   while (!complete)
   {
@@ -462,6 +468,7 @@ void play_song_menu(void)
         {
           lcd_clear();
           lcd_write_string("Moog City");
+          lcd_write_arrow();
           index++;
         }
 
@@ -489,6 +496,7 @@ void play_song_menu(void)
         {
           lcd_clear();
           lcd_write_string("Aria Math");
+          lcd_write_arrow();
           index++;
         }
 
@@ -523,6 +531,7 @@ void play_song_menu(void)
         {
           lcd_clear();
           lcd_write_string("Living Mice");
+          lcd_write_arrow();
           index++;
         }
 
@@ -557,6 +566,7 @@ void play_song_menu(void)
         {
           lcd_clear();
           lcd_write_string("Wet Hands");
+          lcd_write_arrow();
           index++;
         }
 
@@ -592,6 +602,7 @@ void play_song_menu(void)
         {
           lcd_clear();
           lcd_write_string("Strad");
+          lcd_write_arrow();
           index++;
         }
 
@@ -656,6 +667,7 @@ void play_song_menu(void)
 
 void play_moog_city(void)
 {
+  lcd_clear();
   led_on(LED_BAR_LD1_IDX);
   led_off(LED_BAR_LD2_IDX);
 
@@ -665,6 +677,26 @@ void play_moog_city(void)
     play_note(moog_city[i].freq, moog_city[i].duration,
               moog_city[i].note_spacing);
     lcd_clear();
+
+    if (g_pb2_pressed)
+    {
+      msec_delay(200);
+      uint8_t pause_value = 0;
+      g_pb2_pressed       = false;
+      lcd_write_string("Song Paused...");
+      lcd_set_ddram_addr(LCD_LINE2_ADDR);
+      lcd_write_string("Press PB2 2 play");
+      while (pause_value < 1)
+      {
+        if (g_pb2_pressed)
+        {
+          lcd_clear();
+          g_pb2_pressed = false;
+          msec_delay(200);
+          pause_value++;
+        }
+      }
+    }
 
   } /* for */
 
@@ -678,6 +710,7 @@ void play_moog_city(void)
 
 void play_aria_math(void)
 {
+  lcd_clear();
   led_on(LED_BAR_LD1_IDX);
   led_off(LED_BAR_LD2_IDX);
   for (int i = 0; i < ARIA_MATH_LENGTH; i++)
@@ -686,6 +719,26 @@ void play_aria_math(void)
     play_note(aria_math[i].freq, aria_math[i].duration,
               aria_math[i].note_spacing);
     lcd_clear();
+
+    if (g_pb2_pressed)
+    {
+      msec_delay(200);
+      uint8_t pause_value = 0;
+      g_pb2_pressed       = false;
+      lcd_write_string("Song Paused...");
+      lcd_set_ddram_addr(LCD_LINE2_ADDR);
+      lcd_write_string("Press PB2 2 play");
+      while (pause_value < 1)
+      {
+        if (g_pb2_pressed)
+        {
+          lcd_clear();
+          g_pb2_pressed = false;
+          msec_delay(200);
+          pause_value++;
+        }
+      }
+    }
   } /* for */
 
   if (g_pb1_pressed)
@@ -698,6 +751,7 @@ void play_aria_math(void)
 
 void play_living_mice(void)
 {
+  lcd_clear();
   led_on(LED_BAR_LD1_IDX);
   led_off(LED_BAR_LD2_IDX);
   for (int i = 0; i < LIVING_MICE_LENGTH; i++)
@@ -706,6 +760,26 @@ void play_living_mice(void)
     play_note(living_mice[i].freq, living_mice[i].duration,
               living_mice[i].note_spacing);
     lcd_clear();
+
+    if (g_pb2_pressed)
+    {
+      msec_delay(200);
+      uint8_t pause_value = 0;
+      g_pb2_pressed       = false;
+      lcd_write_string("Song Paused...");
+      lcd_set_ddram_addr(LCD_LINE2_ADDR);
+      lcd_write_string("Press PB2 2 play");
+      while (pause_value < 1)
+      {
+        if (g_pb2_pressed)
+        {
+          lcd_clear();
+          g_pb2_pressed = false;
+          msec_delay(200);
+          pause_value++;
+        }
+      }
+    }
   } /* for */
 
   if (g_pb1_pressed)
@@ -718,6 +792,7 @@ void play_living_mice(void)
 
 void play_wet_hands(void)
 {
+  lcd_clear();
   led_on(LED_BAR_LD1_IDX);
   led_off(LED_BAR_LD2_IDX);
   lcd_set_ddram_addr(LCD_LINE1_ADDR);
@@ -732,8 +807,9 @@ void play_wet_hands(void)
     {
       msec_delay(200);
       uint8_t pause_value = 0;
-      g_pb2_pressed = false;
-      lcd_write_string("Song Paused..."); // If i had more time we could of put it into the
+      g_pb2_pressed       = false;
+      lcd_write_string(
+          "Song Paused..."); // If i had more time we could of put it into the
                              // sytick in order to have a varible that is just
                              // called stop and play music
       lcd_set_ddram_addr(LCD_LINE2_ADDR);
@@ -743,7 +819,7 @@ void play_wet_hands(void)
         if (g_pb2_pressed)
         {
           lcd_clear();
-          g_pb2_pressed= false;
+          g_pb2_pressed = false;
           msec_delay(200);
           pause_value++;
         }
@@ -762,6 +838,7 @@ void play_wet_hands(void)
 
 void play_strad(void)
 {
+  lcd_clear();
   led_on(LED_BAR_LD1_IDX);
   led_off(LED_BAR_LD2_IDX);
   for (int i = 0; i < STRAD_LENGTH; i++)
@@ -769,6 +846,26 @@ void play_strad(void)
     lcd_write_string(strad[i].note);
     play_note(strad[i].freq, strad[i].duration, strad[i].note_spacing);
     lcd_clear();
+
+    if (g_pb2_pressed)
+    {
+      msec_delay(200);
+      uint8_t pause_value = 0;
+      g_pb2_pressed       = false;
+      lcd_write_string("Song Paused...");
+      lcd_set_ddram_addr(LCD_LINE2_ADDR);
+      lcd_write_string("Press PB2 2 play");
+      while (pause_value < 1)
+      {
+        if (g_pb2_pressed)
+        {
+          lcd_clear();
+          g_pb2_pressed = false;
+          msec_delay(200);
+          pause_value++;
+        }
+      }
+    }
   } /* for */
 
   if (g_pb1_pressed)
@@ -795,7 +892,7 @@ void volume_change(void)
     lcd_write_doublebyte(ADC_value);
 
     leds_off();
-    
+
     for (uint8_t led_idx = LED_BAR_LD0_IDX; led_idx < ADC_value / 455;
          led_idx++)
     {
@@ -822,4 +919,44 @@ void volume_change(void)
       done = true;
     }
   }
+}
+
+void random_song(void)
+{
+  // Seed the random number generator once
+  srand(time(NULL));
+
+  // Generate a random number between 1 and 100
+  int num2 = (rand() % 5) + 1;
+
+  if (num2 == 1)
+  {
+    play_moog_city();
+  }
+
+  if (num2 == 2)
+  {
+    play_aria_math();
+  }
+
+  if (num2 == 3)
+  {
+    play_living_mice();
+  }
+
+  if (num2 == 4)
+  {
+    play_wet_hands();
+  }
+
+  if (num2 == 5)
+  {
+    play_strad();
+  }
+}
+
+void lcd_write_arrow(void)
+{
+  lcd_set_ddram_addr(LCD_CHAR_POSITION_13);
+  lcd_write_string("<---");
 }
